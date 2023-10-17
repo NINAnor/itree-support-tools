@@ -1,4 +1,4 @@
-study_area: country, county, municipality, district, city, area
+municipality: baerum
 
 # coordinate system
 spatial_reference:

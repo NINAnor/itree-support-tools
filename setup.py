@@ -5,7 +5,7 @@ requirements = [
 ]
 
 setup(
-    name="windows-template",
+    name="itree-support-tools",
     version="0.1.0",
     description="This repo is a python template for windows.",
     license="MIT",

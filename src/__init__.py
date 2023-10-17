@@ -15,6 +15,5 @@ from src.config import load_catalog, load_parameters  # noqa
 
 # local imports
 from src.logger import setup_logging  # noqa
-from src.utils import yaml_load  # noqa
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())

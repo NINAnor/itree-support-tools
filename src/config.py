@@ -5,7 +5,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from utils import yaml_load
+from src.utils.yaml_utils import yaml_load
 
 # --------------------------------------------------------------------------- #
 # Load secure variables from .env file
@@ -14,7 +14,7 @@ from utils import yaml_load
 # for .env file in USER directory
 # user_dir = C:\\USERS\\<<firstname.lastname>>
 user_dir = os.path.join(os.path.expanduser("~"))
-dotenv_path = os.path.join(user_dir, ".env")
+dotenv_path = os.path.join(user_dir, "trekroner.env")
 load_dotenv(dotenv_path)
 
 # path to yaml project configuration file
@@ -33,6 +33,14 @@ def load_catalog():
     catalog = os.path.join(project_root, "config/catalog.yaml")
     with open(catalog, "r") as f:
         catalog = yaml_load(f)
+
+    # replace municipality variable with correct municipality
+    municipality = load_parameters()["municipality"]
+
+    for key, value in catalog.items():
+        catalog[key]["filepath"] = value["filepath"].replace(
+            "<<municipality>>", municipality
+        )
 
     return catalog
 
@@ -57,4 +65,4 @@ if __name__ == "__main__":
     print("Loading catalog...")
     catalog = load_catalog()
     parameters = load_parameters()
-    print(catalog["name"]["filepath"])
+    print(catalog)

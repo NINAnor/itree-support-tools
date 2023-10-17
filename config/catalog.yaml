@@ -1,24 +1,46 @@
-# ${PROJECT}: path/to/local/project/catalog
+# ${DATA_PATH_NINA}: path/to/network/data/
+# ${DATA_PATH_LOCAL}: path/to/offline/data/
 # stored in user-dir/.env
 
 # ----------------------------
 # DATA CATALOG
 # ----------------------------
 
-name:
+# general data 
+admin:
   type: filegdb
-  filepath: ${TEMPLATE_PROJECT}/path/to/gdb
+  filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/general/<<municipality>>_admindata.gdb
+
+neighbourhood:
+    type: featureclass
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/general/<<municipality>>_admindata.gdb/bydeler
+    key: "bydelnummer"
 
 
-name2:
-  type: excel
-  filepath: ${TEMPLATE_PROJECT}/path/to/excel
+# raw data
+raw_in_situ_trees:
+    type: featureclass
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/raw/<<municipality>>_insitu_bytraer.gdb/itree_traer
+
+raw_laser_trekroner:
+    type: featureclass
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/raw/<<municipality>>_laser_bytraer.gdb/trekroner
+
+# interim data
+interim_input_stems:
+    type: filegdb
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/input_stems.gdb
+
+interim_input_crowns:
+    type: filegdb
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/input_crowns.gdb
 
 # ----------------------------
 # METADATA
 # ----------------------------
 
 metadata:
+    filepath: path/to/metadata
     identification:
         title:
             en: english title
