@@ -81,3 +81,12 @@ def crowns(raw_laser, gdb_input_crowns):
             field_mapping="#",
             sort_field=None,
         )
+
+
+def lookup(excel_path, sheet_name):
+    import pandas as pd
+
+    # import lookup table
+    df = pd.read_excel(excel_path, sheet_name)
+
+    return df

@@ -1,11 +1,10 @@
 import logging
 import os
 
-import arcpy
 
 import src.decorators as dec
 from src.config import load_catalog, load_parameters
-from src.data import load_data
+from src.data import clean_data, load_data
 from src.logger import setup_logging
 from src.utils import arcpy_utils as au
 
@@ -39,6 +38,10 @@ def main():
         logger.info("User disagreed with the municipality.")
         exit()
 
+    # get raw insitu fields based on municipality
+    raw_insitu_fields = catalog["raw_in_situ_trees"]["fields"][municipality]
+    logger.info(f"Raw insitu fields: {raw_insitu_fields}")
+
     # get nb list
     neighbourhood_list = au.get_neighbourhood_list(
         neighbourhood_path, neighbourhood_key
@@ -47,8 +50,19 @@ def main():
     logger.info(f"Neighbourhood list: {neighbourhood_list}")
 
     # --- load data ---
-    load_data.stems(raw_in_situ, interim_input_stems)
-    load_data.crowns(raw_laser, interim_input_crowns)
+    df_lookup = load_data.lookup(
+        excel_path=catalog["lookup_species"]["filepath"],
+        sheet_name=catalog["lookup_species"]["sheet_names"][0],
+    )
+    print(df_lookup.head())
+    # load_data.stems(raw_in_situ, interim_input_stems)
+    # load_data.crowns(raw_laser, interim_input_crowns)
+
+    # --- clean data ---
+    input_fc = os.path.join(
+        interim_input_stems, catalog["interim_input_stems"]["fc"][0]
+    )
+    clean_data.create_schema(input_fc, df_lookup, municipality, raw_insitu_fields)
 
 
 if __name__ == "__main__":

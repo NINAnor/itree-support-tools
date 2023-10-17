@@ -16,11 +16,57 @@ neighbourhood:
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/general/<<municipality>>_admindata.gdb/bydeler
     key: "bydelnummer"
 
+lookup_attribute_fields:
+    type: excel
+    filepath: ${DATA_PATH_LOCAL}/data/lookup_tables/lookup_attribute_fields.xlsx
+    sheet_names:
+        - lookup_attribute_fields
+
+lookup_species:
+    type: excel
+    filepath: ${DATA_PATH_LOCAL}/data/lookup_tables/lookup_tree_species.xlsx
+    sheet_names:
+        - itree_species_lookup
+        - naturtype_lookup
 
 # raw data
 raw_in_situ_trees:
     type: featureclass
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/raw/<<municipality>>_insitu_bytraer.gdb/itree_traer
+    fields:
+        bodo:
+            - "GlobalID"
+            - "OBJECTID"
+            - "Shape"
+            - "bydelnummer"
+            - "stem_id"
+            - "Treslag"
+            - "Kommentar_Treslag"
+            - "Omkrets"
+            - "Høyde"
+            - "Sted"
+            - "Registreringsdato"
+            - "Creator_1"
+            - "Kommentar"
+        baerum:
+            - "OBJECTID"
+            - "Shape"
+        kristiansand:
+            - "GlobalID"
+            - "OBJECTID"
+            - "Shape"
+            - "bydelnummer"
+            - "stem_id"
+            - "id"
+            - "botanisk_n"
+            - "art"
+            - "stammeomkr"
+            - "DBH"
+            - "hoyde"
+            - "kronebredd"
+            - "datafangst"
+            - "registrert"
+            - "kommentar"
 
 raw_laser_trekroner:
     type: featureclass
@@ -30,6 +76,8 @@ raw_laser_trekroner:
 interim_input_stems:
     type: filegdb
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/input_stems.gdb
+    fc:
+        - stems_in_situ
 
 interim_input_crowns:
     type: filegdb
