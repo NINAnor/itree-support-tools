@@ -4,8 +4,10 @@ py-windows-template
 This is a template for a python project on Windows using Conda and VS Code. 
 
 ### Project Installation and Configuration
-1. Click on the green button "Use this template" on GitHub.
-2. Open VS Code and clone the repository.
+
+The code is build in an ArcGIS Pro 3.1.0. conda environment with spatial analyst licensed enabled. 
+
+1. Clone the repository.
 3. Open [Project structure](docs/project_structure.md) to view the structure of this template.
 4. Set up your Python Environment:
     
@@ -15,9 +17,10 @@ This is a template for a python project on Windows using Conda and VS Code.
         conda env create -f environment.yml
         conda activate project-name
     ```
+
     b. Install linters using pipx 
     ```bash
-        # install linters using make
+        # install linters using pipx
         make install-global
         # test linters
         make codestyle
@@ -36,7 +39,8 @@ This is a template for a python project on Windows using Conda and VS Code.
 -------
 
 ### Workflow
-*text here*
+
+
 
 
 
