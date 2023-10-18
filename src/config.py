@@ -53,7 +53,7 @@ def load_parameters():
     dict: parameters
     """
     parameters = os.path.join(project_root, "config/parameters.yaml")
-    with open("../config/parameters.yaml", "r") as f:
+    with open(parameters, "r") as f:
         parameters = yaml_load(f)
     return parameters
 
