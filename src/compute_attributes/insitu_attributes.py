@@ -5,9 +5,8 @@ import arcpy
 import pandas as pd
 from arcpy import env
 
-from src import DATA_PATH, INTERIM_PATH, MUNICIPALITY
-from src import arcpy_utils as au
-from src import logger
+# from src import DATA_PATH, INTERIM_PATH, MUNICIPALITY
+from src.utils import arcpy_utils as au
 
 # ------------------------------------------------------ #
 # FLOAT: up to 6 decimal places
@@ -37,9 +36,10 @@ class InsituAttributes:
 
     """
 
-    def __init__(self, gdb_path: str, fc_filename: str):
+    def __init__(self, gdb_path: str, fc_filename: str, logger=None):
         self.gdb_path = gdb_path
         self.fc_filename = fc_filename
+        self.logger = logger or logging.getLogger(__name__)
 
     def attr_species(self, excel_path: str, sheet_name: str, norwegian_name_field: str):
         """classifies the tree species based on a lookup table
@@ -114,7 +114,7 @@ class InsituAttributes:
             code_block=codeblock,
         )
 
-        logger.info(
+        self.logger.info(
             "You might need to reload ArcGIS Pro to see the changes in the attribute table."
         )
 
@@ -203,6 +203,8 @@ class InsituAttributes:
 
 if __name__ == "__main__":
     # Recalssify the columns taxon_genus, taxon_type and common_name:
+
+    pass
     gdb_path = os.path.join(INTERIM_PATH, "itree_attributes.gdb")
     au.createGDB_ifNotExists(gdb_path)
 

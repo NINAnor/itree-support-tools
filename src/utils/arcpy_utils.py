@@ -495,5 +495,78 @@ def round_fields_two_decimals(feature_class, fields_to_round: list):
     logger.info("Rounding completed.")
 
 
+def exportPoints_byPolygon(
+    point_layer, polygon_layer, selecting_field, output_gdb, output_id_field="point_id"
+):
+    """Iterate over a polygon layer and for each object select all points WITHIN
+    the polygon and export those points to a separate layer based on a value
+    in the polygon layer.
+
+    Example:
+    Select all points within a neighbourhood and export them to a separate layer
+    for each neighbourhood,
+
+    Args:
+        point_layer (_type_): input point layer
+        polygon_layer (_type_): input polygon layer
+        selecting_field (_type_): field name with unique values to classify points.
+        ouput_gdb (_type_): output gdb to store point feature layers
+
+    Returns:
+        dict: dictionary with KEY: neigbourhood code and VALUE: path to point feature layer
+    """
+    # dict to store the new layers containing points per neighbourhood
+    output_points = {}
+
+    fields = ["OID@", selecting_field]
+    # iterate through neighbourhood polygons
+    with arcpy.da.SearchCursor(polygon_layer, fields) as cursor:
+        for row in cursor:
+            # Get the Object ID and neighborhood code for each neighborhood
+            n_oid, value = row
+            logging.info(
+                f"Processing OBJECTID {n_oid}, with {selecting_field}: {value}..."
+            )
+
+            # Set the spatial relationship for the Spatial Join
+            query = f"{selecting_field} = '{value}'"
+
+            # create bydel layer
+            arcpy.MakeFeatureLayer_management(
+                in_features=polygon_layer, out_layer=f"temp_{n_oid}", where_clause=query
+            )
+
+            output = os.path.join(output_gdb, "b_" + value + "_stems")
+
+            # Perform the Spatial Join between the points and the current neighborhood
+            # Keep only the points that are within the neighborhood
+            if arcpy.Exists(output):
+                arcpy.management.Delete(output)
+
+            output_lyr = arcpy.analysis.SpatialJoin(
+                point_layer,
+                f"temp_{n_oid}",
+                output,
+                join_operation="JOIN_ONE_TO_ONE",
+                join_type="KEEP_COMMON",
+                match_option="WITHIN",
+            )
+
+            addField_ifNotExists(output_lyr, output_id_field, "TEXT")
+            # add id using selecting_field
+            with arcpy.da.UpdateCursor(
+                output_lyr, ["OBJECTID", output_id_field, selecting_field]
+            ) as cursor:
+                for row in cursor:
+                    # format id to <bydelcode>_<OBJECTID>
+                    row[1] = "id_" + str(value) + "_" + str(row[0])
+                    cursor.updateRow(row)
+
+            # Add the output feature layer to the dictionary with the neighborhood name as the key
+            output_points[value] = output_lyr
+
+    return output_points
+
+
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)

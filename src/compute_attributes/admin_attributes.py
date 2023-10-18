@@ -3,7 +3,7 @@ import os
 
 import arcpy
 
-from src import arcpy_utils as au
+from src.utils import arcpy_utils as au
 
 # ------------------------------------------------------ #
 # FLOAT: up to 6 decimal places

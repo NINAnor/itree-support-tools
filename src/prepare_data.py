@@ -9,7 +9,7 @@ from src.utils import arcpy_utils as au
 
 
 @dec.timer
-def main():
+def prepare_data():
     # load catalog
 
     logger = logging.getLogger(__name__)
@@ -22,19 +22,20 @@ def main():
     municipality = parameters["municipality"]
 
     # load data
-    neighbourhood_path = catalog["neighbourhood"]["filepath"]  # fc
-    neighbourhood_key = catalog["neighbourhood"]["key"]  # field name
+    fc_neighbourhood = catalog["neighbourhood"]["filepath"]
+    key_neighbourhood = catalog["neighbourhood"]["key"]  # field name
 
-    raw_in_situ = catalog["raw_in_situ_trees"]["filepath"]  # filegdb
-    raw_laser = catalog["raw_laser_trekroner"]["filepath"]  # filegdb
-    interim_input_stems = catalog["interim_input_stems"]["filepath"]  # filegdb
-    interim_input_crowns = catalog["interim_input_crowns"]["filepath"]  # filegdb
+    fc_raw_in_situ = catalog["raw_in_situ_trees"]["filepath"]
+    fc_raw_laser = catalog["raw_laser_trekroner"]["filepath"]
 
-    interim_input_stems_fc = os.path.join(
-        interim_input_stems, catalog["interim_input_stems"]["fc"][0]  # fc
+    gdb_interim_input_stems = catalog["interim_input_stems"]["filepath"]
+    gdb_interim_input_crowns = catalog["interim_input_crowns"]["filepath"]
+
+    fc_interim_input_stems = os.path.join(
+        gdb_interim_input_stems, catalog["interim_input_stems"]["fc"][0]
     )
 
-    raw_insitu_fields = catalog["raw_in_situ_trees"]["fields"][
+    ls_raw_insitu_fields = catalog["raw_in_situ_trees"]["fields"][
         municipality
     ]  # [field names]
 
@@ -47,11 +48,9 @@ def main():
         exit()
 
     # get nb list
-    neighbourhood_list = au.get_neighbourhood_list(
-        neighbourhood_path, neighbourhood_key
-    )
+    ls_neighbourhood = au.get_neighbourhood_list(fc_neighbourhood, key_neighbourhood)
 
-    logger.info(f"Neighbourhood list: {neighbourhood_list}")
+    logger.info(f"Neighbourhood list: {ls_neighbourhood}")
 
     # --- load data ---
     df_lookup_fields = load.lookup_table(
@@ -66,16 +65,30 @@ def main():
         sheet_name=catalog["lookup_species"]["sheet_names"][0],
     )
     print(df_lookup_species.head())
-    load.copy_stems(raw_in_situ, interim_input_stems)
-    load.copy_crowns(raw_laser, interim_input_crowns)
+    load.copy_stems(fc_raw_in_situ, gdb_interim_input_stems)
+    load.copy_crowns(fc_raw_laser, gdb_interim_input_crowns)
 
     # --- clean data ---
-
     clean.update_schema_stems(
-        input_field_names=raw_insitu_fields,
-        fc=interim_input_stems_fc,
-        lookup_tb=df_lookup_fields,
+        input_field_list=ls_raw_insitu_fields,
+        input_fc=fc_interim_input_stems,
+        lookup_df=df_lookup_fields,
         municipality=municipality,
+    )
+
+    clean.fill_attributes(
+        input_gdb=gdb_interim_input_stems,
+        input_fc=fc_interim_input_stems,
+        lookup_excel=catalog["lookup_species"]["filepath"],
+        lookup_sheet=catalog["lookup_species"]["sheet_names"][0],
+    )
+
+    clean.group_by_neighbourhood(
+        point_fc=fc_interim_input_stems,
+        polygon_fc=fc_neighbourhood,
+        selecting_key=key_neighbourhood,
+        output_gdb=gdb_interim_input_stems,
+        output_key="stem_id",
     )
 
 
@@ -85,5 +98,5 @@ if __name__ == "__main__":
     # set up logger
     setup_logging()
 
-    # run function
-    main()
+    # run script
+    prepare_data()
