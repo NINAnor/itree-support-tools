@@ -16,11 +16,14 @@ neighbourhood:
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/general/<<municipality>>_admindata.gdb/bydeler
     key: "bydelnummer"
 
-lookup_attribute_fields:
+lookup_fields:
     type: excel
     filepath: ${DATA_PATH_LOCAL}/data/lookup_tables/lookup_attribute_fields.xlsx
     sheet_names:
-        - lookup_attribute_fields
+        - complete_attribute_list
+        - itree_eco_table
+        - crowns_table
+        - stems_table
 
 lookup_species:
     type: excel
@@ -35,38 +38,43 @@ raw_in_situ_trees:
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/raw/<<municipality>>_insitu_bytraer.gdb/itree_traer
     fields:
         bodo:
-            - "GlobalID"
-            - "OBJECTID"
-            - "Shape"
-            - "bydelnummer"
-            - "stem_id"
-            - "Treslag"
-            - "Kommentar_Treslag"
-            - "Omkrets"
-            - "Høyde"
-            - "Sted"
-            - "Registreringsdato"
-            - "Creator_1"
-            - "Kommentar"
+            - GlobalID
+            - OBJECTID
+            - Shape
+            - bydelnummer
+            - stem_id
+            - Treslag
+            - Kommentar_Treslag
+            - Omkrets
+            - Høyde
+            - Sted
+            - Registreringsdato
+            - Creator_1
+            - Kommentar
         baerum:
-            - "OBJECTID"
-            - "Shape"
+            - OBJECTID
+            - Shape
+            - naturtype
+            - stammeomkrets
+            - omradenavn
+            - kartleggingsdato
+            - kartlegger
         kristiansand:
-            - "GlobalID"
-            - "OBJECTID"
-            - "Shape"
-            - "bydelnummer"
-            - "stem_id"
-            - "id"
-            - "botanisk_n"
-            - "art"
-            - "stammeomkr"
-            - "DBH"
-            - "hoyde"
-            - "kronebredd"
-            - "datafangst"
-            - "registrert"
-            - "kommentar"
+            - GlobalID
+            - OBJECTID
+            - Shape
+            - bydelnummer
+            - stem_id
+            - id
+            - botanisk_n
+            - art
+            - stammeomkr
+            - DBH
+            - hoyde
+            - kronebredd
+            - datafangst
+            - registrert
+            - kommentar
 
 raw_laser_trekroner:
     type: featureclass
