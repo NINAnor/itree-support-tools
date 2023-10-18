@@ -91,6 +91,18 @@ interim_input_crowns:
     type: filegdb
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/input_crowns.gdb
 
+geo_relation_round_1:
+    type: filegdb
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/geo_relation/merge_round_1.gdb
+    fc:
+        - crowns_in_situ
+
+geo_relation_round_2:
+    type: filegdb
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/geo_relation/merge_round_2.gdb
+    fc:
+        - crowns_in_situ
+        - all_crowns
 # ----------------------------
 # METADATA
 # ----------------------------

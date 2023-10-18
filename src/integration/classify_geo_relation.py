@@ -32,9 +32,8 @@ import os
 import arcpy
 from arcpy import env
 
-from src import ADMIN_GDB, INTERIM_PATH, MUNICIPALITY, SPATIAL_REFERENCE, RuleAttributes
-from src import arcpy_utils as au
-from src import logger
+from src.compute_attributes.geo_relation_rule_attributes import RuleAttributes
+from src.utils import arcpy_utils as au
 
 # ------------------------------------------------------ #
 # Functions
@@ -316,7 +315,10 @@ def export_c2_crowns(v_crowns_c1_c2_joincount, v_crowns_c2, round):
     arcpy.SelectLayerByAttribute_management("lyr_polygon", "CLEAR_SELECTION")
 
 
-def main(neighbourhood_list, gdb_crowns, gdb_stems, round):
+def main(neighbourhood_list, gdb_crowns, gdb_stems, spatial_reference, round):
+    from pathlib import Path
+
+    interim_path = Path(gdb_crowns).parent
 
     logging.info(
         "Iterate over neighbourhoods and classify the geometric relation between the stem points (in situ) and the crown polygons (laser)"
@@ -338,20 +340,20 @@ def main(neighbourhood_list, gdb_crowns, gdb_stems, round):
         # output
         if round == 1:
             filegdb_path = os.path.join(
-                INTERIM_PATH, "geo_relation", "round_1_b" + n_code + ".gdb"
+                interim_path, "geo_relation", "round_1_b" + n_code + ".gdb"
             )
             v_raw_crowns = os.path.join(gdb_crowns, f"b_{n_code}_kroner")
 
-        # if round == 2:
-        #     filegdb_path = os.path.join(
-        #         INTERIM_PATH, "geo_relation", "round_2_b" + n_code + ".gdb"
-        #     )
-        #     v_raw_crowns = os.path.join(gdb_crowns, f"crowns_insitu_b_{n_code}")
+        if round == 2:
+            filegdb_path = os.path.join(
+                interim_path, "geo_relation", "round_2_b" + n_code + ".gdb"
+            )
+            v_raw_crowns = os.path.join(gdb_crowns, f"crowns_insitu_b_{n_code}")
 
-        # if round == 3:
-        #     filegdb_path = os.path.join(
-        #         INTERIM_PATH, "geo_relation", "round_3_b" + n_code + ".gdb"
-        #     )
+        if round == 3:
+            filegdb_path = os.path.join(
+                interim_path, "geo_relation", "round_3_b" + n_code + ".gdb"
+            )
 
         au.createGDB_ifNotExists(filegdb_path)
 
@@ -379,7 +381,7 @@ def main(neighbourhood_list, gdb_crowns, gdb_stems, round):
 
         # workspace settings
         env.overwriteOutput = True
-        env.outputCoordinateSystem = arcpy.SpatialReference(SPATIAL_REFERENCE)
+        env.outputCoordinateSystem = arcpy.SpatialReference(spatial_reference)
         env.workspace = filegdb_path
 
         logging.info(
@@ -423,8 +425,7 @@ def main(neighbourhood_list, gdb_crowns, gdb_stems, round):
         arcpy.Delete_management(v_crowns_c1_c2_joincount)
 
 
-def all(v_crowns, v_stems, filegdb_path, round):
-
+def all(v_crowns, v_stems, filegdb_path, spatial_reference, round):
     au.createGDB_ifNotExists(filegdb_path)
 
     v_crowns_c4 = os.path.join(filegdb_path, f"crowns_c4")
@@ -451,7 +452,7 @@ def all(v_crowns, v_stems, filegdb_path, round):
 
     # workspace settings
     env.overwriteOutput = True
-    env.outputCoordinateSystem = arcpy.SpatialReference(SPATIAL_REFERENCE)
+    env.outputCoordinateSystem = arcpy.SpatialReference(spatial_reference)
     env.workspace = filegdb_path
 
     logging.info(
@@ -496,23 +497,4 @@ def all(v_crowns, v_stems, filegdb_path, round):
 
 
 if __name__ == "__main__":
-
-    # setup logger
-    logger.setup_logger(logfile=True)
-    logger = logging.getLogger(__name__)
-
-    gdb_crowns = os.path.join(INTERIM_PATH, "input_crowns.gdb")
-    gdb_stems = os.path.join(INTERIM_PATH, "input_stems.gdb")
-
-    # admin
-    kommune = MUNICIPALITY
-
-    # neighbourhood list
-    neighbourhood_path = os.path.join(ADMIN_GDB, "bydeler")
-    n_field_name = "bydelnummer"
-    neighbourhood_list = au.get_neighbourhood_list(neighbourhood_path, n_field_name)
-    neighbourhood_list.sort()
-    print(neighbourhood_list)
-
-    round = 1
-    main(neighbourhood_list, gdb_crowns, gdb_stems, round)
+    pass

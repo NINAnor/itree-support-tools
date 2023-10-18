@@ -9,16 +9,18 @@ import arcpy
 from arcpy import env
 
 # local packages
-from src import ADMIN_GDB, INTERIM_PATH, MUNICIPALITY, SPATIAL_REFERENCE
-from src import arcpy_utils as au
-from src import logger
+# from src import ADMIN_GDB, INTERIM_PATH, MUNICIPALITY, SPATIAL_REFERENCE
+from src.utils import arcpy_utils as au
 
 
-def main(gdb_stems, neighbourhood_list, round):
-
+def main(gdb_stems, neighbourhood_list, municipality, spatial_reference, round):
     logging.info(
-        f"Split Case 2 treecrowns for <{MUNICIPALITY}> municipality using a Voronoi diagram."
+        f"Split Case 2 treecrowns for <{municipality}> municipality using a Voronoi diagram."
     )
+
+    from pathlib import Path
+
+    interim_path = Path(gdb_stems).parent
 
     # Detect trees per neighbourhood
     for n_code in neighbourhood_list:
@@ -28,7 +30,7 @@ def main(gdb_stems, neighbourhood_list, round):
 
         # workspace settings
         env.overwriteOutput = True
-        env.outputCoordinateSystem = arcpy.SpatialReference(SPATIAL_REFERENCE)
+        env.outputCoordinateSystem = arcpy.SpatialReference(spatial_reference)
 
         # ------------------------------------------------------ #
         # Dynamic Path Variables
@@ -37,18 +39,18 @@ def main(gdb_stems, neighbourhood_list, round):
         # input data
         if round == 1:
             filegdb_path = os.path.join(
-                INTERIM_PATH, "geo_relation", "round_1_b" + n_code + ".gdb"
+                interim_path, "geo_relation", "round_1_b" + n_code + ".gdb"
             )
 
-        # if round == 2:
-        #     filegdb_path = os.path.join(
-        #         INTERIM_PATH, "geo_relation", "round_2_b" + n_code + ".gdb"
-        #     )
+        elif round == 2:
+            filegdb_path = os.path.join(
+                interim_path, "geo_relation", "round_2_b" + n_code + ".gdb"
+            )
 
-        # if round == 3:
-        #     filegdb_path = os.path.join(
-        #         INTERIM_PATH, "geo_relation", "round_3_b" + n_code + ".gdb"
-        #     )
+        elif round == 3:
+            filegdb_path = os.path.join(
+                interim_path, "geo_relation", "round_3_b" + n_code + ".gdb"
+            )
 
         au.createGDB_ifNotExists(filegdb_path)
 
@@ -65,7 +67,7 @@ def main(gdb_stems, neighbourhood_list, round):
         # arcpy.Delete_management(v_crowns_c2_split)
         # set environment
         env.overwriteOutput = True
-        env.outputCoordinateSystem = arcpy.SpatialReference(SPATIAL_REFERENCE)
+        env.outputCoordinateSystem = arcpy.SpatialReference(spatial_reference)
         env.workspace = filegdb_path
 
         # TODO move to separate function
@@ -79,7 +81,6 @@ def main(gdb_stems, neighbourhood_list, round):
         fields = ["OBJECTID", "crown_id"]
         with arcpy.da.SearchCursor(polygon_layer, fields) as cursor:
             for row in cursor:
-
                 logging.info(
                     f"START SPLITTING TREECROWN, OBJECTID: {row[0]}, crown_id: {row[1]}"
                 )
@@ -222,11 +223,10 @@ def main(gdb_stems, neighbourhood_list, round):
 
 
 # TODO move to separate function
-def all(filegdb_path, v_raw_stems):
-
+def all(filegdb_path, v_raw_stems, spatial_reference):
     # workspace settings
     env.overwriteOutput = True
-    env.outputCoordinateSystem = arcpy.SpatialReference(SPATIAL_REFERENCE)
+    env.outputCoordinateSystem = arcpy.SpatialReference(spatial_reference)
 
     # ------------------------------------------------------ #
     # Dynamic Path Variables
@@ -242,7 +242,7 @@ def all(filegdb_path, v_raw_stems):
 
     # set environment
     env.overwriteOutput = True
-    env.outputCoordinateSystem = arcpy.SpatialReference(SPATIAL_REFERENCE)
+    env.outputCoordinateSystem = arcpy.SpatialReference(spatial_reference)
     env.workspace = filegdb_path
 
     polygon_layer = v_crowns_c2
@@ -255,7 +255,6 @@ def all(filegdb_path, v_raw_stems):
     fields = ["OBJECTID", "crown_id"]
     with arcpy.da.SearchCursor(polygon_layer, fields) as cursor:
         for row in cursor:
-
             logging.info(
                 f"START SPLITTING TREECROWN, OBJECTID: {row[0]}, crown_id: {row[1]}"
             )
@@ -388,17 +387,4 @@ def all(filegdb_path, v_raw_stems):
 
 
 if __name__ == "__main__":
-
-    # setup logger
-    logger.setup_logger(logfile=True)
-    logger = logging.getLogger(__name__)
-
-    gdb_stems = os.path.join(INTERIM_PATH, "input_stems.gdb")
-
-    # neighbourhood list
-    neighbourhood_path = os.path.join(ADMIN_GDB, "bydeler")
-    n_field_name = "bydelnummer"
-    neighbourhood_list = au.get_neighbourhood_list(neighbourhood_path, n_field_name)
-    # bodo
-    # neighbourhood_list = ["180405", "180406", "180407", "180408", "180409", "180410"]
-    main(gdb_stems, neighbourhood_list)
+    pass
