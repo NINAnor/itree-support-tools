@@ -49,6 +49,8 @@ def export_c4_crowns(v_raw_crowns, v_raw_stems, v_crowns_c4):
         v_raw_stems (_type_): input points (raw in situ stems)
         v_crowns_case4 (_type_): output polygons (case 4 crowns)
     """
+
+    logger = logging.getLogger(__name__)
     # laser crowns
     lyr_polygon = arcpy.MakeFeatureLayer_management(
         in_features=v_raw_crowns, out_layer="lyr_polygon"
@@ -76,7 +78,7 @@ def export_c4_crowns(v_raw_crowns, v_raw_stems, v_crowns_c4):
 
     au.calculateField_ifEmpty(v_crowns_c4, "geo_relation", '"Case 4"')
 
-    logging.info(f"Case 4 selected and exported to {os.path.basename(v_crowns_c4)}")
+    logger.info(f"Case 4 selected and exported to {os.path.basename(v_crowns_c4)}")
 
     # clear selection
     arcpy.SelectLayerByAttribute_management("lyr_polygon", "CLEAR_SELECTION")
@@ -93,7 +95,7 @@ def remove_c4_crowns(v_raw_crowns, v_raw_stems, v_crowns_c1_c2, filegdb_path):
         v_raw_stems (_type_): input points (raw in situ stems)
         v_crowns_c1_c2 (_type_): input points (case 1 and case 2 crowns)
     """
-
+    logger = logging.getLogger(__name__)
     # create a copy of v_raw_crowns otherwise you orginal data is altered
     temp_crowns = arcpy.CopyFeatures_management(
         v_raw_crowns, os.path.join(filegdb_path, "crowns_tmp")
@@ -136,6 +138,7 @@ def export_c3_stems(v_raw_crowns, v_raw_stems, v_stems_c3, filegdb_path):
         v_raw_stems (_type_): input points (raw in situ stems)
         v_stems_c3 (_type_): output points (case 3 stems)
     """
+    logger = logging.getLogger(__name__)
     # laser crowns
     lyr_polygon = arcpy.MakeFeatureLayer_management(
         in_features=v_raw_crowns, out_layer="lyr_polygon"
@@ -162,7 +165,7 @@ def export_c3_stems(v_raw_crowns, v_raw_stems, v_stems_c3, filegdb_path):
     )
     au.calculateField_ifEmpty(v_stems_c3, "geo_relation", '"Case 3"')
 
-    logging.info(f"Case 3 selected and exported to {os.path.basename(v_stems_c3)}")
+    logger.info(f"Case 3 selected and exported to {os.path.basename(v_stems_c3)}")
 
     # fill attribute values
     rule_attribue = RuleAttributes(filegdb_path, v_stems_c3)
@@ -182,6 +185,7 @@ def remove_c3_stems(v_raw_crowns, v_raw_stems, v_stems_c1_c2, filegdb_path):
         v_raw_stems (_type_): input stems (raw in situ stems)
         v_stems_c3 (_type_): output stems (case 1 and case 2 stems)
     """
+    logger = logging.getLogger(__name__)
     # create a copy of v_raw_stems otherwise you orginal data is altered
     temp_stems = arcpy.CopyFeatures_management(
         v_raw_stems, os.path.join(filegdb_path, "stems_tmp")
@@ -226,7 +230,7 @@ def count_points_in_polygon(v_crowns_c1_c2, v_stems_c1_c2, v_crowns_c1_c2_joinco
         v_stems_c1_c2 (str): input points (case 1 and case 2 stems)
         v_crowns_c1_c2_joincount (str): output polygons (case 1 and case 2 crowns with join count)
     """
-
+    logger = logging.getLogger(__name__)
     # ensure join coutn is deleted
     arcpy.DeleteField_management(v_stems_c1_c2, ["Join_Count", "TARGET_FID"])
     arcpy.DeleteField_management(v_crowns_c1_c2, ["Join_Count", "TARGET_FID"])
@@ -248,6 +252,7 @@ def export_c1_crowns(v_crowns_c1_c2_joincount, v_crowns_c1, round):
         v_crowns_c1_c2_joincount (_type_): input polygons (case 1 and case 2 crowns with join count)
         c1_crowns (_type_): output polygons (case 1 crowns)
     """
+    logger = logging.getLogger(__name__)
     # classify geo relation based on Join_Count
     # if 1 -> case 1, if > 1 -> case 2
     query_c1 = "Join_Count = 1"  # (polygon:point = 1:1)
@@ -269,7 +274,7 @@ def export_c1_crowns(v_crowns_c1_c2_joincount, v_crowns_c1, round):
     au.addField_ifNotExists(v_crowns_c1, "geo_relation", "TEXT")
     au.calculateField_ifEmpty(v_crowns_c1, "geo_relation", '"Case 1"')
 
-    logging.info(f"Case 1 selected and exported to {os.path.basename(v_crowns_c1)}")
+    logger.info(f"Case 1 selected and exported to {os.path.basename(v_crowns_c1)}")
 
     arcpy.AlterField_management(
         v_crowns_c1, "Join_Count", f"stem_count{round}", f"stem_count{round}"
@@ -288,7 +293,7 @@ def export_c2_crowns(v_crowns_c1_c2_joincount, v_crowns_c2, round):
         v_crowns_c1_c2_joincount (_type_): input polygons (case 1 and case 2 crowns with join count)
         v_crowns_c2 (_type_): output polygons (case 2 crowns)
     """
-
+    logger = logging.getLogger(__name__)
     query_c2 = "Join_Count > 1"  # (polygon:point = 1:n)
 
     lyr_polgyon = arcpy.MakeFeatureLayer_management(
@@ -306,7 +311,7 @@ def export_c2_crowns(v_crowns_c1_c2_joincount, v_crowns_c2, round):
     au.addField_ifNotExists(v_crowns_c2, "geo_relation", "TEXT")
     au.calculateField_ifEmpty(v_crowns_c2, "geo_relation", '"Case 2"')
 
-    logging.info(f"Case 2 selected and exported to {os.path.basename(v_crowns_c2)}")
+    logger.info(f"Case 2 selected and exported to {os.path.basename(v_crowns_c2)}")
     arcpy.AlterField_management(
         v_crowns_c2, "Join_Count", f"stem_count{round}", f"stem_count{round}"
     )
@@ -315,57 +320,63 @@ def export_c2_crowns(v_crowns_c1_c2_joincount, v_crowns_c2, round):
     arcpy.SelectLayerByAttribute_management("lyr_polygon", "CLEAR_SELECTION")
 
 
-def main(neighbourhood_list, gdb_crowns, gdb_stems, spatial_reference, round):
+def classify_per_nb(
+    neighbourhood_list, gdb_crowns, gdb_stems, spatial_reference, round
+):
+    """Classify the geometric relation between the stem points (in situ) and the crown polygons (laser)
+    per neighbourhood. (round 1)
+
+    Parameters
+    ----------
+    neighbourhood_list : _type_
+        _description_
+    gdb_crowns : _type_
+        _description_
+    gdb_stems : _type_
+        _description_
+    spatial_reference : _type_
+        _description_
+    round : _type_
+        _description_
+    """
+    logger = logging.getLogger(__name__)
     from pathlib import Path
 
     interim_path = Path(gdb_crowns).parent
 
-    logging.info(
+    logger.info(
         "Iterate over neighbourhoods and classify the geometric relation between the stem points (in situ) and the crown polygons (laser)"
     )
-    logging.info("Processing")
+    logger.info("Processing")
 
     # Detect trees per neighbourhood
     for n_code in neighbourhood_list:
-        logging.info("\t---------------------".format(n_code))
-        logging.info("\tPROCESSING NEIGHBOURHOOD <<{}>>".format(n_code))
-        logging.info("\t---------------------".format(n_code))
+        logger.info("-------------------------------------------------------------")
+        logger.info(
+            "CLASSIFYING THE GEO RELATION FOR NEIGHBOURHOOD <<{}>>".format(n_code)
+        )
+        logger.info("-------------------------------------------------------------")
 
         # ------------------------------------------------------ #
         # Dynamic Path Variables
         # ------------------------------------------------------ #
         # input
         v_raw_stems = os.path.join(gdb_stems, f"b_{n_code}_stems")
+        v_raw_crowns = os.path.join(gdb_crowns, f"b_{n_code}_kroner")
 
         # output
-        if round == 1:
-            filegdb_path = os.path.join(
-                interim_path, "geo_relation", "round_1_b" + n_code + ".gdb"
-            )
-            v_raw_crowns = os.path.join(gdb_crowns, f"b_{n_code}_kroner")
-
-        if round == 2:
-            filegdb_path = os.path.join(
-                interim_path, "geo_relation", "round_2_b" + n_code + ".gdb"
-            )
-            v_raw_crowns = os.path.join(gdb_crowns, f"crowns_insitu_b_{n_code}")
-
-        if round == 3:
-            filegdb_path = os.path.join(
-                interim_path, "geo_relation", "round_3_b" + n_code + ".gdb"
-            )
-
+        filegdb_path = os.path.join(
+            interim_path, "geo_relation", "round_" + str(round) + "_b" + n_code + ".gdb"
+        )
         au.createGDB_ifNotExists(filegdb_path)
-
-        v_crowns_c4 = os.path.join(filegdb_path, f"crowns_c4")
-        v_crowns_c1_c2 = os.path.join(filegdb_path, f"crowns_c1_c2")
-        v_stems_c3 = os.path.join(filegdb_path, f"stems_c3")
-        v_stems_c1_c2 = os.path.join(filegdb_path, f"stems_c1_c2")
-
-        v_crowns_c1_c2_joincount = os.path.join(filegdb_path, f"crowns_c1_c2_joincount")
-
-        v_crowns_c1 = os.path.join(filegdb_path, f"crowns_c1")
-        v_crowns_c2 = os.path.join(filegdb_path, f"crowns_c2")
+        # fc in output gdb
+        v_crowns_c4 = os.path.join(filegdb_path, "crowns_c4")
+        v_crowns_c1_c2 = os.path.join(filegdb_path, "crowns_c1_c2")
+        v_stems_c3 = os.path.join(filegdb_path, "stems_c3")
+        v_stems_c1_c2 = os.path.join(filegdb_path, "stems_c1_c2")
+        v_crowns_c1_c2_joincount = os.path.join(filegdb_path, "crowns_c1_c2_joincount")
+        v_crowns_c1 = os.path.join(filegdb_path, "crowns_c1")
+        v_crowns_c2 = os.path.join(filegdb_path, "crowns_c2")
 
         all_files = [
             v_crowns_c1,
@@ -384,59 +395,76 @@ def main(neighbourhood_list, gdb_crowns, gdb_stems, spatial_reference, round):
         env.outputCoordinateSystem = arcpy.SpatialReference(spatial_reference)
         env.workspace = filegdb_path
 
-        logging.info(
+        logger.info(
             "Start exporting CASE 4 crowns (e.g select crowns that do not intersect with any in situ stems)"
         )
         export_c4_crowns(v_raw_crowns, v_raw_stems, v_crowns_c4)
 
-        logging.info(
+        logger.info(
             "Start exporting CASE 1 and CASE 2 crowns (e.g remove case 4 crowns from the input crowns)"
         )
         remove_c4_crowns(v_raw_crowns, v_raw_stems, v_crowns_c1_c2, filegdb_path)
 
-        logging.info(
+        logger.info(
             "Start exporting CASE 3 stems (e.g select stems that do not intersect with any laser crowns)"
         )
         export_c3_stems(v_raw_crowns, v_raw_stems, v_stems_c3, filegdb_path)
 
-        logging.info(
+        logger.info(
             "Start exporting CASE 1 and CASE 2 stems (e.g remove case 3 stems from the input stems)"
         )
         remove_c3_stems(v_raw_crowns, v_raw_stems, v_stems_c1_c2, filegdb_path)
 
-        logging.info("Start counting points in polygon")
+        logger.info("Start counting points in polygon")
         # TODO ensure that no previous joing count exists!!
         count_points_in_polygon(v_crowns_c1_c2, v_stems_c1_c2, v_crowns_c1_c2_joincount)
 
-        logging.info(
+        logger.info(
             "Start exporting CASE 1 crowns (e.g select crowns with join count = 1)"
         )
         export_c1_crowns(v_crowns_c1_c2_joincount, v_crowns_c1, round)
 
-        logging.info(
+        logger.info(
             "Start exporting CASE 2 crowns (e.g select crowns with join count > 1)"
         )
         export_c2_crowns(v_crowns_c1_c2_joincount, v_crowns_c2, round)
 
-        logging.info("Delete temporary files:")
+        logger.info("Delete temporary files:")
         # delete temporary files
         arcpy.Delete_management(v_crowns_c1_c2)
         arcpy.Delete_management(v_stems_c1_c2)
         arcpy.Delete_management(v_crowns_c1_c2_joincount)
 
 
-def all(v_crowns, v_stems, filegdb_path, spatial_reference, round):
+def classify_study_area(v_crowns, v_stems, filegdb_path, spatial_reference, round):
+    """Classify the geometric relation between the stem points (in situ) and the crown polygons (laser)
+    for the complete area. (round 2)
+
+    Parameters
+    ----------
+    v_crowns : _type_
+        _description_
+    v_stems : _type_
+        _description_
+    filegdb_path : _type_
+        _description_
+    spatial_reference : _type_
+        _description_
+    round : _type_
+        _description_
+    """
+    logger = logging.getLogger(__name__)
     au.createGDB_ifNotExists(filegdb_path)
 
-    v_crowns_c4 = os.path.join(filegdb_path, f"crowns_c4")
-    v_crowns_c1_c2 = os.path.join(filegdb_path, f"crowns_c1_c2")
-    v_stems_c3 = os.path.join(filegdb_path, f"stems_c3")
-    v_stems_c1_c2 = os.path.join(filegdb_path, f"stems_c1_c2")
+    v_crowns_c4 = os.path.join(filegdb_path, "crowns_c4")
+    v_crowns_c1_c2 = os.path.join(filegdb_path, "crowns_c1_c2")
+    v_stems_c3 = os.path.join(filegdb_path, "stems_c3")
+    v_stems_c1_c2 = os.path.join(filegdb_path, "stems_c1_c2")
 
-    v_crowns_c1_c2_joincount = os.path.join(filegdb_path, f"crowns_c1_c2_joincount")
+    v_crowns_c1_c2_joincount = os.path.join(filegdb_path, "crowns_c1_c2_joincount")
 
-    v_crowns_c1 = os.path.join(filegdb_path, f"crowns_c1")
-    v_crowns_c2 = os.path.join(filegdb_path, f"crowns_c2")
+    v_crowns_c1 = os.path.join(filegdb_path, "crowns_c1")
+    v_crowns_c2 = os.path.join(filegdb_path, "crowns_c2")
 
     all_files = [
         v_crowns_c1,
@@ -455,41 +483,41 @@ def all(v_crowns, v_stems, filegdb_path, spatial_reference, round):
     env.outputCoordinateSystem = arcpy.SpatialReference(spatial_reference)
     env.workspace = filegdb_path
 
-    logging.info(
+    logger.info("-----------------------------")
+    logger.info("CLASSIFYING THE GEO RELATION")
+    logger.info("-----------------------------")
+
+    logger.info(
         "Start exporting CASE 4 crowns (e.g select crowns that do not intersect with any in situ stems)"
     )
     export_c4_crowns(v_crowns, v_stems, v_crowns_c4)
 
-    logging.info(
+    logger.info(
         "Start exporting CASE 1 and CASE 2 crowns (e.g remove case 4 crowns from the input crowns)"
     )
     remove_c4_crowns(v_crowns, v_stems, v_crowns_c1_c2, filegdb_path)
 
-    logging.info(
+    logger.info(
         "Start exporting CASE 3 stems (e.g select stems that do not intersect with any laser crowns)"
     )
     export_c3_stems(v_crowns, v_stems, v_stems_c3, filegdb_path)
 
-    logging.info(
+    logger.info(
         "Start exporting CASE 1 and CASE 2 stems (e.g remove case 3 stems from the input stems)"
     )
     remove_c3_stems(v_crowns, v_stems, v_stems_c1_c2, filegdb_path)
 
-    logging.info("Start counting points in polygon")
+    logger.info("Start counting points in polygon")
     # TODO ensure that no previous joing count exists!!
     count_points_in_polygon(v_crowns_c1_c2, v_stems_c1_c2, v_crowns_c1_c2_joincount)
 
-    logging.info(
-        "Start exporting CASE 1 crowns (e.g select crowns with join count = 1)"
-    )
+    logger.info("Start exporting CASE 1 crowns (e.g select crowns with join count = 1)")
     export_c1_crowns(v_crowns_c1_c2_joincount, v_crowns_c1, round)
 
-    logging.info(
-        "Start exporting CASE 2 crowns (e.g select crowns with join count > 1)"
-    )
+    logger.info("Start exporting CASE 2 crowns (e.g select crowns with join count > 1)")
     export_c2_crowns(v_crowns_c1_c2_joincount, v_crowns_c2, round)
 
-    logging.info("Delete temporary files:")
+    logger.info("Delete temporary files:")
     # delete temporary files
     arcpy.Delete_management(v_crowns_c1_c2)
     arcpy.Delete_management(v_stems_c1_c2)

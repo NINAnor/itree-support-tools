@@ -19,7 +19,7 @@ from src.compute_attributes.geo_relation_rule_attributes import RuleAttributes
 from src.utils import arcpy_utils as au
 
 
-def main(
+def buffer_per_nb(
     neighbourhood_list: list, gdb_stems: str, spatial_reference: str, municipality
 ):
     print("make main script")
@@ -36,9 +36,9 @@ def main(
 
     # Detect trees per neighbourhood
     for n_code in neighbourhood_list:
-        logger.info("\t---------------------".format(n_code))
-        logger.info("\tPROCESSING NEIGHBOURHOOD <<{}>>".format(n_code))
-        logger.info("\t---------------------".format(n_code))
+        logger.info("-------------------------------------------------------------")
+        logger.info("CASE 3: BUFFER TREE STEMS FOR NEIGHBOURHOOD <<{}>>".format(n_code))
+        logger.info("-------------------------------------------------------------")
 
         # ------------------------------------------------------ #
         # Dynamic Path Variables
@@ -49,7 +49,7 @@ def main(
         )
 
         # input
-        v_stems_c3 = os.path.join(filegdb_path, f"stems_c3")
+        v_stems_c3 = os.path.join(filegdb_path, "stems_c3")
         v_crowns_raw = os.path.join(
             interim_path, "input_crowns.gdb", "b_" + n_code + "_kroner"
         )
@@ -109,19 +109,23 @@ def main(
         )
 
         # delete temporary files
-        # files = [v_buffer, v_erase, v_dissolve]
-        # for file in files:
-        # arcpy.Delete_management(file)
+        files = [v_buffer, v_erase, v_dissolve]
+        for file in files:
+            arcpy.Delete_management(file)
 
 
 # check if can be deleted
-def all(filegdb_path, v_crowns_all, spatial_reference, municipality):
+def buffer_study_area(filegdb_path, v_crowns_all, spatial_reference, municipality):
     # ------------------------------------------------------ #
     # Dynamic Path Variables
     # ------------------------------------------------------ #
     logger = logging.getLogger(__name__)
+    logger.info("-------------------------")
+    logger.info("CASE 3: BUFFER TREE STEMS")
+    logger.info("-------------------------")
+
     # input
-    v_stems_c3 = os.path.join(filegdb_path, f"stems_c3")
+    v_stems_c3 = os.path.join(filegdb_path, "stems_c3")
 
     # temp
     v_buffer = os.path.join(filegdb_path, "tmp_c3_buffer")

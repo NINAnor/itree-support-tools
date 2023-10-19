@@ -9,10 +9,10 @@ from arcpy import env
 from src.utils import arcpy_utils as au
 
 
-def part_1(neighbourhood_list, gdb_stems, spatial_reference, round):
+def merge_per_nb(neighbourhood_list, gdb_stems, spatial_reference, round):
     logger = logging.getLogger(__name__)
     logger.info(
-        "Merge Case 1, split Case 2 and re-modelled Case 3 crowns into one file."
+        "Merge Case 1, split Case 2 and re-modelled Case 3 crowns per neighbourhood."
     )
     logger.info("-" * 100)
     logger.info("Processing neighbourhoods...")
@@ -24,24 +24,17 @@ def part_1(neighbourhood_list, gdb_stems, spatial_reference, round):
 
     # Detect trees per neighbourhood
     for n_code in neighbourhood_list:
-        logger.info("\t---------------------".format(n_code))
-        logger.info("\tPROCESSING NEIGHBOURHOOD <<{}>>".format(n_code))
-        logger.info("\t---------------------".format(n_code))
-
+        logger.info("-------------------------------------------------------------")
+        logger.info("MERGE CASES PER NEIGHBOURHOOD <<{}>>".format(n_code))
+        logger.info("-------------------------------------------------------------")
         # input data
-        # output
-        if round == 1:
-            filegdb_path = os.path.join(
-                interim_path, "geo_relation", "round_1_b" + n_code + ".gdb"
-            )
-
-        if round == 2:
-            filegdb_path = os.path.join(
-                interim_path, "geo_relation", "round_2_b" + n_code + ".gdb"
-            )
+        # input
+        filegdb_path = os.path.join(
+            interim_path, "geo_relation", "round_" + str(round) + "_b" + n_code + ".gdb"
+        )
 
         au.createGDB_ifNotExists(filegdb_path)
-
+        # output
         output_gdb = os.path.join(
             interim_path, "geo_relation", "merge_round_" + str(round) + ".gdb"
         )
@@ -99,31 +92,33 @@ def part_1(neighbourhood_list, gdb_stems, spatial_reference, round):
     logger.info("Finished merging the crowns into one file ...")
 
 
-def part_2(input_gdb):
+def merge_study_area(input_gdb, ouput_fc):
     # merge all files within a list
     logger = logging.getLogger(__name__)
-    logger.info("Merge the itree crowns per neighbourhood into one municipality file ")
-    logger.info("-" * 100)
+    logger.info("-------------------------------------------------------------")
+    logger.info("MERGE NEIGHBOURHOOD CROWNS INTO ONE FILE")
+    logger.info("-------------------------------------------------------------")
 
     au.createGDB_ifNotExists(input_gdb)
     env.workspace = input_gdb
     fc_list = arcpy.ListFeatureClasses()
 
-    # drop crowns_in_situ if it exists
-    if "crowns_in_situ" in fc_list:
-        fc_list.remove("crowns_in_situ")
+    # drop if it exists
+    # get base name from output_fc
+    base_name = os.path.basename(ouput_fc)
+    print("base_name:", base_name)
+    if base_name in fc_list:
+        fc_list.remove(base_name)
 
-    print("input_file_list:", fc_list)
-    logger.info("Merging neighbourhoods with in situ data ...")
-    logger.info(fc_list)
-
-    arcpy.Merge_management(
-        inputs=fc_list, output=os.path.join(input_gdb, "crowns_in_situ")
-    )
+    logger.info(f"Merging: {fc_list}")
+    arcpy.Merge_management(inputs=fc_list, output=ouput_fc)
 
 
-def part_3(input_gdb, fc_crowns_round_2, fc_all_crowns):
+def merge_complete(input_gdb, fc_crowns_in_situ, fc_all_crowns):
     logger = logging.getLogger(__name__)
+    logger.info("-------------------------------------------------------------")
+    logger.info("MERGE FILES INTO <<ITREE_CROWNS>> AND <<ALL_CROWNS>>")
+    logger.info("-------------------------------------------------------------")
     env.workspace = input_gdb
     c1 = "crowns_c1"
     c2 = "crowns_c2_split"
@@ -144,9 +139,9 @@ def part_3(input_gdb, fc_crowns_round_2, fc_all_crowns):
             continue
 
     # if exists continue
-    if not arcpy.Exists(fc_crowns_round_2):
+    if not arcpy.Exists(fc_crowns_in_situ):
         logger.info(f"Merge the features: {fc_list}")
-        arcpy.Merge_management(inputs=fc_list, output=fc_crowns_round_2)
+        arcpy.Merge_management(inputs=fc_list, output=fc_crowns_in_situ)
 
     if not arcpy.Exists(fc_all_crowns):
         fc_all = fc_list
@@ -188,7 +183,9 @@ def clean(input_fc):
         if field.name.lower() not in fields_to_keep:
             fields_to_delete.append(field.name)
 
-    arcpy.DeleteField_management(input_fc, fields_to_delete)
+    # if list is not empty list delete fields
+    if fields_to_delete != []:
+        arcpy.DeleteField_management(input_fc, fields_to_delete)
 
     print("Fields removed: ", fields_to_delete)
 

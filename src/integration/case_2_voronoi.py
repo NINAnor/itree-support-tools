@@ -13,8 +13,24 @@ from arcpy import env
 from src.utils import arcpy_utils as au
 
 
-def main(gdb_stems, neighbourhood_list, municipality, spatial_reference, round):
-    logging.info(
+def split_per_nb(gdb_stems, neighbourhood_list, municipality, spatial_reference, round):
+    """_summary_
+
+    Parameters
+    ----------
+    gdb_stems : _type_
+        _description_
+    neighbourhood_list : _type_
+        _description_
+    municipality : _type_
+        _description_
+    spatial_reference : _type_
+        _description_
+    round : _type_
+        _description_
+    """
+    logger = logging.getLogger(__name__)
+    logger.info(
         f"Split Case 2 treecrowns for <{municipality}> municipality using a Voronoi diagram."
     )
 
@@ -24,9 +40,9 @@ def main(gdb_stems, neighbourhood_list, municipality, spatial_reference, round):
 
     # Detect trees per neighbourhood
     for n_code in neighbourhood_list:
-        logging.info("\t---------------------".format(n_code))
-        logging.info("\tPROCESSING NEIGHBOURHOOD <<{}>>".format(n_code))
-        logging.info("\t---------------------".format(n_code))
+        logger.info("-------------------------------------------------------------")
+        logger.info("CASE 2: SPLIT CROWNS FOR NEIGHBOURHOOD <<{}>>".format(n_code))
+        logger.info("-------------------------------------------------------------")
 
         # workspace settings
         env.overwriteOutput = True
@@ -37,31 +53,19 @@ def main(gdb_stems, neighbourhood_list, municipality, spatial_reference, round):
         # ------------------------------------------------------ #
 
         # input data
-        if round == 1:
-            filegdb_path = os.path.join(
-                interim_path, "geo_relation", "round_1_b" + n_code + ".gdb"
-            )
-
-        elif round == 2:
-            filegdb_path = os.path.join(
-                interim_path, "geo_relation", "round_2_b" + n_code + ".gdb"
-            )
-
-        elif round == 3:
-            filegdb_path = os.path.join(
-                interim_path, "geo_relation", "round_3_b" + n_code + ".gdb"
-            )
+        filegdb_path = os.path.join(
+            interim_path, "geo_relation", "round_" + str(round) + "_b" + n_code + ".gdb"
+        )
 
         au.createGDB_ifNotExists(filegdb_path)
 
-        v_crowns_c2 = os.path.join(filegdb_path, f"crowns_c2")
+        v_crowns_c2 = os.path.join(filegdb_path, "crowns_c2")
         v_raw_stems = os.path.join(gdb_stems, "stems_in_situ")
 
         # output data
-
-        v_crowns_c2_split = os.path.join(filegdb_path, f"crowns_c2_split")
+        v_crowns_c2_split = os.path.join(filegdb_path, "crowns_c2_split")
         if arcpy.Exists(v_crowns_c2_split):
-            logging.info(f"Crowns already split for neighbourhood: {n_code}. SKIP.")
+            logger.info(f"Crowns already split for neighbourhood: {n_code}. SKIP.")
             return
 
         # arcpy.Delete_management(v_crowns_c2_split)
@@ -75,13 +79,13 @@ def main(gdb_stems, neighbourhood_list, municipality, spatial_reference, round):
         point_layer = v_raw_stems
 
         count_crowns = int(arcpy.GetCount_management(polygon_layer).getOutput(0))
-        logging.info(f"Count of Case 2 Crowns: {count_crowns}")
+        logger.info(f"Count of Case 2 Crowns: {count_crowns}")
 
         # Split each tree crown based on the number of stems.
         fields = ["OBJECTID", "crown_id"]
         with arcpy.da.SearchCursor(polygon_layer, fields) as cursor:
             for row in cursor:
-                logging.info(
+                logger.info(
                     f"START SPLITTING TREECROWN, OBJECTID: {row[0]}, crown_id: {row[1]}"
                 )
                 # reset environment extent!
@@ -127,7 +131,7 @@ def main(gdb_stems, neighbourhood_list, municipality, spatial_reference, round):
                 fields_pnt = ["OBJECTID", "tree_id"]
                 with arcpy.da.SearchCursor(tmp_selected_points, fields_pnt) as cursor:
                     for row in cursor:
-                        logging.info(f"selected_point: {row[0]}, tree_id: {row[1]}")
+                        logger.info(f"selected_point: {row[0]}, tree_id: {row[1]}")
 
                 # split the treecrown using the thiessen polygons
                 env.extent = tmp_crown_lyr  # tree crown area
@@ -171,7 +175,7 @@ def main(gdb_stems, neighbourhood_list, municipality, spatial_reference, round):
                     for field, field_type in zip(field_list, field_type):
                         au.addField_ifNotExists(v_crowns_c2_split, field, field_type)
 
-                    logging.info(
+                    logger.info(
                         "Target feature class '{}' created.".format(v_crowns_c2_split)
                     )
 
@@ -190,16 +194,16 @@ def main(gdb_stems, neighbourhood_list, municipality, spatial_reference, round):
                 count_appended_crowns = int(
                     arcpy.GetCount_management(tmp_split_crown_lyr).getOutput(0)
                 )
-                logging.info(f"Appended crowns: {count_appended_crowns}")
+                logger.info(f"Appended crowns: {count_appended_crowns}")
 
                 # fields_polygon= ["OBJECTID", "crown_id"]
                 # with arcpy.da.SearchCursor(v_crowns_c2_split, fields_polygon) as cursor:
                 #     for row in cursor:
-                #         logging.info(
+                #         logger.info(
                 #             f"Appended crowns: {row[0]},  crown_id: {row[1]}"
                 #         )
 
-                logging.info(
+                logger.info(
                     "Clear selection and delete temporary layers, BEFORE moving to the next crown.."
                 )
                 lyr_list = [
@@ -218,12 +222,24 @@ def main(gdb_stems, neighbourhood_list, municipality, spatial_reference, round):
                 arcpy.SelectLayerByAttribute_management(point_layer, "CLEAR_SELECTION")
 
         print("Done splitting crowns for neighbourhood: {}".format(n_code))
-    logging.info("Done splitting Crowns for: {}".format(neighbourhood_list))
+    logger.info("Done splitting Crowns for: {}".format(neighbourhood_list))
     print("Done splitting Crowns for: {}".format(neighbourhood_list))
 
 
 # TODO move to separate function
-def all(filegdb_path, v_raw_stems, spatial_reference):
+def split_study_area(filegdb_path, v_raw_stems, spatial_reference):
+    """_summary_
+
+    Parameters
+    ----------
+    filegdb_path : _type_
+        _description_
+    v_raw_stems : _type_
+        _description_
+    spatial_reference : _type_
+        _description_
+    """
+    logger = logging
     # workspace settings
     env.overwriteOutput = True
     env.outputCoordinateSystem = arcpy.SpatialReference(spatial_reference)
@@ -232,12 +248,12 @@ def all(filegdb_path, v_raw_stems, spatial_reference):
     # Dynamic Path Variables
     # ------------------------------------------------------ #
 
-    v_crowns_c2 = os.path.join(filegdb_path, f"crowns_c2")
+    v_crowns_c2 = os.path.join(filegdb_path, "crowns_c2")
 
     # output data
-    v_crowns_c2_split = os.path.join(filegdb_path, f"crowns_c2_split")
+    v_crowns_c2_split = os.path.join(filegdb_path, "crowns_c2_split")
     if arcpy.Exists(v_crowns_c2_split):
-        logging.info(f"Crowns already split. SKIP.")
+        logger.info("Crowns already split. SKIP.")
         return
 
     # set environment
@@ -245,17 +261,21 @@ def all(filegdb_path, v_raw_stems, spatial_reference):
     env.outputCoordinateSystem = arcpy.SpatialReference(spatial_reference)
     env.workspace = filegdb_path
 
+    logger.info("--------------------")
+    logger.info("CASE 2: SPLIT CROWNS")
+    logger.info("--------------------")
+
     polygon_layer = v_crowns_c2
     point_layer = v_raw_stems
 
     count_crowns = int(arcpy.GetCount_management(polygon_layer).getOutput(0))
-    logging.info(f"Count of Case 2 Crowns: {count_crowns}")
+    logger.info(f"Count of Case 2 Crowns: {count_crowns}")
 
     # Split each tree crown based on the number of stems.
     fields = ["OBJECTID", "crown_id"]
     with arcpy.da.SearchCursor(polygon_layer, fields) as cursor:
         for row in cursor:
-            logging.info(
+            logger.info(
                 f"START SPLITTING TREECROWN, OBJECTID: {row[0]}, crown_id: {row[1]}"
             )
             # reset environment extent!
@@ -301,7 +321,7 @@ def all(filegdb_path, v_raw_stems, spatial_reference):
             fields_pnt = ["OBJECTID", "tree_id"]
             with arcpy.da.SearchCursor(tmp_selected_points, fields_pnt) as cursor:
                 for row in cursor:
-                    logging.info(f"selected_point: {row[0]}, tree_id: {row[1]}")
+                    logger.info(f"selected_point: {row[0]}, tree_id: {row[1]}")
 
             # split the treecrown using the thiessen polygons
             env.extent = tmp_crown_lyr  # tree crown area
@@ -337,7 +357,7 @@ def all(filegdb_path, v_raw_stems, spatial_reference):
 
                 au.calculateField_ifEmpty(v_crowns_c2_split, "geo_relation", "Case 2")
 
-                logging.info(
+                logger.info(
                     "Target feature class '{}' created.".format(v_crowns_c2_split)
                 )
 
@@ -356,16 +376,16 @@ def all(filegdb_path, v_raw_stems, spatial_reference):
             count_appended_crowns = int(
                 arcpy.GetCount_management(tmp_split_crown_lyr).getOutput(0)
             )
-            logging.info(f"Appended crowns: {count_appended_crowns}")
+            logger.info(f"Appended crowns: {count_appended_crowns}")
 
             # fields_polygon= ["OBJECTID", "crown_id"]
             # with arcpy.da.SearchCursor(v_crowns_c2_split, fields_polygon) as cursor:
             #     for row in cursor:
-            #         logging.info(
+            #         logger.info(
             #             f"Appended crowns: {row[0]},  crown_id: {row[1]}"
             #         )
 
-            logging.info(
+            logger.info(
                 "Clear selection and delete temporary layers, BEFORE moving to the next crown.."
             )
             lyr_list = [

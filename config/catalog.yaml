@@ -95,14 +95,23 @@ geo_relation_round_1:
     type: filegdb
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/geo_relation/merge_round_1.gdb
     fc:
-        - crowns_in_situ
+        - crowns_round_1
 
 geo_relation_round_2:
     type: filegdb
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/geo_relation/merge_round_2.gdb
     fc:
         - crowns_in_situ
-        - all_crowns
+        - crowns_all
+        - tops_all
+    
+geo_relation:
+    type: filegdb
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/geo_relation.gdb
+    fc: 
+        - crowns_in_situ
+        - crowns_all
+        - tops_all 
 # ----------------------------
 # METADATA
 # ----------------------------

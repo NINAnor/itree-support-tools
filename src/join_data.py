@@ -13,6 +13,13 @@ from src.utils import arcpy_utils as au
 
 @dec.timer
 def join_data(round):
+    """_summary_
+
+    Parameters
+    ----------
+    round : int
+        Round 1 (process per neighbourhood) or Round 2 (process whole study area)
+    """
     # load catalog
 
     logger = logging.getLogger(__name__)
@@ -42,13 +49,6 @@ def join_data(round):
         gdb_crowns_round_1, catalog["geo_relation_round_1"]["fc"][0]
     )
     gdb_crowns_round_2 = catalog["geo_relation_round_2"]["filepath"]
-    fc_crowns_round_2 = os.path.join(
-        gdb_crowns_round_2, catalog["geo_relation_round_2"]["fc"][0]
-    )
-
-    fc_all_crowns = os.path.join(
-        gdb_crowns_round_2, catalog["geo_relation_round_2"]["fc"][1]
-    )
 
     # confirm municipality
     if round == 1:
@@ -68,10 +68,10 @@ def join_data(round):
     ls_neighbourhood = ["302401", "302402"]
     logger.info(f"Neighbourhood list: {ls_neighbourhood}")
 
-    # 1. CLASSIFY geo relation
     if round == 1:
-        logger.info("STARTING ROUND 1 .....")
-        cgr.main(
+        logger.info("\n\nSTARTING ROUND 1 (PER NEIGHBOURHOOD) .....\n")
+        # 1. CLASSIFY geo relation per neighbourhood (round = 1)
+        cgr.classify_per_nb(
             ls_neighbourhood,
             gdb_interim_input_crowns,
             gdb_interim_input_stems,
@@ -80,7 +80,7 @@ def join_data(round):
         )
 
         # 2. VORONOI  tesselation to split "CASE 2" crowns
-        voronoi.main(
+        voronoi.split_per_nb(
             gdb_interim_input_stems,
             ls_neighbourhood,
             municipality,
@@ -89,22 +89,22 @@ def join_data(round):
         )
 
         # 3. MODEL use a buffer based on in-situ radius to model "CASE 3" crowns
-        model_crown.main(
+        model_crown.buffer_per_nb(
             ls_neighbourhood, gdb_interim_input_stems, spatial_reference, municipality
         )
 
         # 4. MERGE  case 1, split case 2 and modelled case 3 crowns
-        merge_trees.part_1(
+        merge_trees.merge_per_nb(
             ls_neighbourhood, gdb_interim_input_stems, spatial_reference, round
         )
 
         # MERGE  AND CLEAN ROUND I
-        merge_trees.part_2(gdb_crowns_round_1)
+        merge_trees.merge_study_area(gdb_crowns_round_1, fc_crowns_round_1)
         merge_trees.clean(fc_crowns_round_1)
     elif round == 2:
-        logger.info("STARTING ROUND 2 .....")
+        logger.info("\n\nSTARTING ROUND 2 (STUDY AREA).....\n")
         # 1. CLASSIFY geo relation
-        cgr.all(
+        cgr.classify_study_area(
             fc_crowns_round_1,
             fc_interim_input_stems,
             gdb_crowns_round_2,
@@ -113,29 +113,74 @@ def join_data(round):
         )
 
         # 2. VORONOI  tesselation to split "CASE 2" crowns
-        voronoi.all(gdb_crowns_round_2, fc_interim_input_stems, spatial_reference)
+        voronoi.split_study_area(
+            gdb_crowns_round_2, fc_interim_input_stems, spatial_reference
+        )
 
         # 3. MODEL use a buffer based on in-situ radius to model "CASE 3" crowns
-        model_crown.all(
+        model_crown.buffer_study_area(
             gdb_crowns_round_2, fc_crowns_round_1, spatial_reference, municipality
         )
 
 
+@dec.timer
 def merge_data():
+    """_summary_"""
     logger = logging.getLogger(__name__)
     logger.info("Loading catalog...")
     catalog = load_catalog()
 
     gdb_crowns_round_2 = catalog["geo_relation_round_2"]["filepath"]
-    fc_crowns_round_2 = os.path.join(
+    # feature classes
+    fc_crowns_in_situ = os.path.join(
         gdb_crowns_round_2, catalog["geo_relation_round_2"]["fc"][0]
     )
-
     fc_all_crowns = os.path.join(
         gdb_crowns_round_2, catalog["geo_relation_round_2"]["fc"][1]
     )
-    merge_trees.part_3(gdb_crowns_round_2, fc_crowns_round_2, fc_all_crowns)
-    merge_trees.clean(fc_crowns_round_2)
+    merge_trees.merge_complete(gdb_crowns_round_2, fc_crowns_in_situ, fc_all_crowns)
+    merge_trees.clean(fc_crowns_in_situ)
+    merge_trees.clean(fc_all_crowns)
+
+
+# TODO
+# CREATE FUNCTION TO SELECT TOPS WITHIN CROWNS
+
+
+@dec.timer
+def copy_output():
+    """Copy output features to interim/geo_relation.gdb"""
+    logger = logging.getLogger(__name__)
+    logger.info("Loading catalog...")
+    catalog = load_catalog()
+
+    # input
+    gdb_crowns_round_2 = catalog["geo_relation_round_2"]["filepath"]
+    # feature classes
+    fc_crowns_in_situ = os.path.join(
+        gdb_crowns_round_2, catalog["geo_relation_round_2"]["fc"][0]
+    )
+    fc_all_crowns = os.path.join(
+        gdb_crowns_round_2, catalog["geo_relation_round_2"]["fc"][1]
+    )
+
+    # output
+    gdb_geo_relation = catalog["geo_relation"]["filepath"]
+    # feature classes
+    fc_crowns_in_situ_output = os.path.join(
+        gdb_geo_relation, catalog["geo_relation"]["fc"][0]
+    )
+    fc_crowns_all_output = os.path.join(
+        gdb_geo_relation, catalog["geo_relation"]["fc"][1]
+    )
+
+    # copy
+    import arcpy
+
+    au.createGDB_ifNotExists(gdb_geo_relation)
+    logger.info("Copying results to geo_relation.gdb...")
+    arcpy.CopyFeatures_management(fc_crowns_in_situ, fc_crowns_in_situ_output)
+    arcpy.CopyFeatures_management(fc_all_crowns, fc_crowns_all_output)
 
 
 if __name__ == "__main__":
@@ -148,16 +193,12 @@ if __name__ == "__main__":
     n_rounds = (1, 2)
 
     # two rounds of point and polygon matching
+    # round 1: per neighbourhood
+    # round 2: whole study area (control, to check if trees on the border of neighbourhoods are correctly matched)
     for counter in n_rounds:
         join_data(round=counter)
 
-    # merge results from round 1 and 2 into:
-    # merge_round_2.gdb/crowns_in_situ
-    # merge_round_2.gdb/all_crowns
+    # merge crowns in-situ and all crowns
     merge_data()
-
-    ##TODO
-    # git commit
-    # test merge c4
-    # move to VDI
-    # run for all nb
+    # copy output to geo_relation.gdb
+    copy_output()
