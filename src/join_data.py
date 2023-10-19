@@ -1,13 +1,22 @@
+# -*- coding: utf-8 -*-
+# --------------------------------------------------------------------------- #
+# Name: join_data.py
+# Date: 2023-10-19
+# Description: Ensure that stems are correctly matched to crowns
+# Author: Willeke A'Campo
+# Dependencies: ArcGIS Pro 3+, Spatial Analyst Extension
+# --------------------------------------------------------------------------- #
+
 import logging
 import os
 
-import src.decorators as dec
-from src.config import load_catalog, load_parameters
+import src.utils.decorators as dec
+from src.config.config import load_catalog, load_parameters
 from src.integration import case_2_voronoi as voronoi
 from src.integration import case_3_model_crown as model_crown
 from src.integration import classify_geo_relation as cgr
 from src.integration import merge_trees
-from src.logger import setup_logging
+from src.config.logger import setup_logging
 from src.utils import arcpy_utils as au
 
 
@@ -209,35 +218,121 @@ def copy_output():
     au.keep_fields(input_fc=fc_crowns_all_output, fields_to_keep=fields_to_keep)
 
 
+def quality_check():
+    """Check if crowns are correctly matched to stems"""
+    logger = logging.getLogger(__name__)
+    logger.info("Loading catalog...")
+    catalog = load_catalog()
+    parameters = load_parameters()
+
+    # input
+    municipality = parameters["municipality"]
+    gdb_geo_relation = catalog["geo_relation"]["filepath"]
+    # feature classes
+    fc_crowns = os.path.join(gdb_geo_relation, catalog["geo_relation"]["fc"][1])
+    fc_stems = os.path.join(gdb_geo_relation, catalog["geo_relation"]["fc"][2])
+
+    # output
+    fc_output = os.path.join(gdb_geo_relation, catalog["geo_relation"]["fc"][4])
+
+    # check if crowns are correctly matched to stems
+    import arcpy
+
+    arcpy.MakeFeatureLayer_management(fc_crowns, "crowns_lyr")
+    arcpy.MakeFeatureLayer_management(fc_stems, "stems_lyr")
+    arcpy.SelectLayerByLocation_management("crowns_lyr", "CONTAINS", "stems_lyr")
+
+    count_crowns = int(arcpy.GetCount_management("crowns_lyr").getOutput(0))
+    count_stems = int(arcpy.GetCount_management("stems_lyr").getOutput(0))
+
+    if count_crowns == count_stems:
+        logger.info(
+            f"All stems (n= {count_stems}) are correctly matched to crowns (n= {count_crowns})"
+        )
+
+        return True
+    else:
+        logger.error(
+            f"WARNING: {count_stems - count_crowns} stems are not matched to crowns"
+        )
+        logger.error("Check crowns and stems in ArcGIS Pro.")
+
+    # Clear Selection
+    arcpy.SelectLayerByAttribute_management("crowns_lyr", "CLEAR_SELECTION")
+    arcpy.SelectLayerByAttribute_management("stems_lyr", "CLEAR_SELECTION")
+    arcpy.management.SelectLayerByLocation(
+        in_layer="stems_lyr",
+        overlap_type="WITHIN",
+        select_features="crowns_lyr",
+        search_distance=None,
+        selection_type="NEW_SELECTION",
+        invert_spatial_relationship="INVERT",
+    )
+
+    # if selection > 1:
+    if int(arcpy.GetCount_management("stems_lyr").getOutput(0)) > 1:
+        logger.error("WARNING: Some stems do not fall within a crown polygon contain.")
+        logger.info("Crowns are estimated using a buffer based on crown_radius.")
+        logger.info(
+            "Copy crowns manual into fc 'crowns_all' and 'crowns_in_situ using ArcGIS Pro."
+        )
+        # if crown_radius is empty set to buffer distance to 1m
+        if municipality == "baerum":
+            buffer_distance_attr_field = 1
+        else:
+            buffer_distance_attr_field = "crown_radius"
+
+        arcpy.analysis.Buffer(
+            in_features="stems_lyr",
+            out_feature_class=fc_output,
+            buffer_distance_or_field=buffer_distance_attr_field,
+            line_side="FULL",
+            line_end_type="ROUND",
+            dissolve_option="NONE",
+            dissolve_field=None,
+            method="PLANAR",
+        )
+
+    arcpy.Delete_management("crowns_lyr")
+    arcpy.Delete_management("stems_lyr")
+
+    return False
+
+
 if __name__ == "__main__":
     """Load data from raw to interim."""
 
     # set up logger
     setup_logging()
+    logger = logging.getLogger(__name__)
 
-    # run script
-    n_rounds = (1, 2)
-    # input(
-    #    "Close any ArcGIS Pro Instances before running this code! Press Enter to continue..."
-    # )
+    if quality_check():
+        logger.info("Crowns are correctly matched to stems.")
+        logger.info("END OF TASK: JOIN DATA")
+        exit()
+    else:
+        logger.info("Crowns are not yet correctly matched to stems.")
+        logger.info("START JOINING DATA...")
 
-    # two rounds of point and polygon matching
-    # round 1: per neighbourhood
-    # round 2: whole study area (control, to check if trees on the border of neighbourhoods are correctly matched)
-    for counter in n_rounds:
-        join_data(round=counter)
+        # run script
+        n_rounds = (1, 2)
+        input(
+            "Close any ArcGIS Pro Instances before running this code! \
+            Press Enter to continue..."
+        )
 
-    # merge crowns in-situ and all crowns
-    merge_data()
-    # copy output to geo_relation.gdb
-    copy_output()
+        # two rounds of point and polygon matching
+        # round 1: per neighbourhood
+        # round 2: whole study area (control: ensure borders of neighbourhoods)
+        for counter in n_rounds:
+            join_data(round=counter)
 
-    # prepare for attribute computation
-    # TODO automate pre-processing
+        # merge crowns in-situ and all crowns
+        merge_data()
+        # copy output to geo_relation.gdb
+        copy_output()
+        # check if crowns are correctly matched to stems
+        quality_check()
+        logger.info("END OF TASK: JOIN DATA")
 
-    # input("Check if stem layer contains XY coord. Press Enter to continue...")
-    # input("MANUALLY Join stem to crown (one-to-one, contains, join_count = 1))")
-    # check if crown contains stem attr.
-
-    # Step 1 Overla analaysis
-    # subroutine overlay_attributes.py
+# --------------------------------------------------------------------------- #

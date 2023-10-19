@@ -119,6 +119,7 @@ geo_relation:
         - crowns_all
         - stems_in_situ
         - tops_all 
+        - crowns_not_detected
 # ----------------------------
 # METADATA
 # ----------------------------
