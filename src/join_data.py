@@ -186,12 +186,13 @@ def copy_output():
     fc_output_stems = os.path.join(gdb_geo_relation, catalog["geo_relation"]["fc"][2])
 
     # copy
+    import arcpy
 
     au.createGDB_ifNotExists(gdb_geo_relation)
     logger.info("Copying results to geo_relation.gdb...")
-    # arcpy.CopyFeatures_management(fc_crowns_in_situ, fc_crowns_in_situ_output)
-    # arcpy.CopyFeatures_management(fc_all_crowns, fc_crowns_all_output)
-    # arcpy.CopyFeatures_management(fc_input_stems, fc_output_stems)
+    arcpy.CopyFeatures_management(fc_crowns_in_situ, fc_crowns_in_situ_output)
+    arcpy.CopyFeatures_management(fc_all_crowns, fc_crowns_all_output)
+    arcpy.CopyFeatures_management(fc_input_stems, fc_output_stems)
 
     # clean
     fields_to_keep = [
@@ -223,11 +224,11 @@ if __name__ == "__main__":
     # two rounds of point and polygon matching
     # round 1: per neighbourhood
     # round 2: whole study area (control, to check if trees on the border of neighbourhoods are correctly matched)
-    # for counter in n_rounds:
-    # join_data(round=counter)
+    for counter in n_rounds:
+        join_data(round=counter)
 
     # merge crowns in-situ and all crowns
-    # merge_data()
+    merge_data()
     # copy output to geo_relation.gdb
     copy_output()
 
