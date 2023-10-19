@@ -12,7 +12,7 @@ import os
 import arcpy
 from arcpy import env
 
-from src.compute_attributes.geo_relation_rule_attributes import RuleAttributes
+from src.attributes.geo_relation_rule_attributes import RuleAttributes
 from src.utils import arcpy_utils as au
 
 # ------------------------------------------------------ #

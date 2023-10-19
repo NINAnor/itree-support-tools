@@ -11,9 +11,9 @@ __version__ = "0.1.0"
 
 import logging
 
-from src.config import load_catalog, load_parameters  # noqa
+from src.config.config import load_catalog, load_parameters  # noqa
 
 # local imports
-from src.logger import setup_logging  # noqa
+from src.config.logger import setup_logging  # noqa
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())

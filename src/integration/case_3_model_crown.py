@@ -13,7 +13,7 @@ import os
 import arcpy
 from arcpy import env
 
-from src.compute_attributes.geo_relation_rule_attributes import RuleAttributes
+from src.attributes.geo_relation_rule_attributes import RuleAttributes
 
 # from src import ADMIN_GDB, INTERIM_PATH, MUNICIPALITY, SPATIAL_REFERENCE, RuleAttributes
 from src.utils import arcpy_utils as au

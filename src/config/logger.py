@@ -6,7 +6,7 @@ import sys
 
 import yaml
 
-project_dir = os.path.join(os.path.dirname(__file__), os.pardir)
+project_dir = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
 config_file = os.path.join(project_dir, "config/config_logger.yaml")
 
 
@@ -110,20 +110,18 @@ class Test(object):
         """Log project configuration"""
         try:
             # loaded as module
-            from src.config import load_catalog, load_parameters  # noqa
+            from src.config.config import load_catalog, load_parameters  # noqa
         except ModuleNotFoundError:
             # standalone use of logger.py
-            from config import load_catalog, load_parameters  # noqa
+            from config.config import load_catalog, load_parameters  # noqa
 
         self.logger.info("Log project configuration:")
 
         catalog = load_catalog()
         parameters = load_parameters()
         # Access configuration variables
-        self.logger.info("DATA_PATH: %s", catalog["name"]["filepath"])
-        self.logger.info(
-            "SPATIAL_REFERENCE: %s", parameters["spatial_reference"]["utm33"]
-        )
+        self.logger.info("DATA_PATH: %s", catalog["admin"]["filepath"])
+        self.logger.info("SPATIAL_REFERENCE: %s", parameters["spatial_reference"])
         self.logger.info("Project configuration logged.")
 
     def log_best_practices(self):

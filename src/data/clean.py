@@ -4,9 +4,9 @@ import logging
 
 import arcpy
 
-from src.compute_attributes.admin_attributes import AdminAttributes
-from src.compute_attributes.geo_relation_rule_attributes import RuleAttributes
-from src.compute_attributes.insitu_attributes import InsituAttributes
+from src.attributes.admin_attributes import AdminAttributes
+from src.attributes.geo_relation_rule_attributes import RuleAttributes
+from src.attributes.insitu_attributes import InsituAttributes
 from src.utils import arcpy_utils as au
 
 

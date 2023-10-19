@@ -18,7 +18,7 @@ dotenv_path = os.path.join(user_dir, "trekroner.env")
 load_dotenv(dotenv_path)
 
 # path to yaml project configuration file
-project_root = Path(__file__).parents[1]
+project_root = Path(__file__).parents[2]
 config_file = os.path.join(project_root, "config/config.yaml")
 
 
