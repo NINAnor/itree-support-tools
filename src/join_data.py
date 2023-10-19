@@ -12,11 +12,11 @@ import os
 
 import src.utils.decorators as dec
 from src.config.config import load_catalog, load_parameters
+from src.config.logger import setup_logging
 from src.integration import case_2_voronoi as voronoi
 from src.integration import case_3_model_crown as model_crown
 from src.integration import classify_geo_relation as cgr
 from src.integration import merge_trees
-from src.config.logger import setup_logging
 from src.utils import arcpy_utils as au
 
 

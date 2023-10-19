@@ -12,8 +12,8 @@ import os
 
 import src.utils.decorators as dec
 from src.config.config import load_catalog, load_parameters
-from src.data import clean, load
 from src.config.logger import setup_logging
+from src.data import clean, load
 from src.utils import arcpy_utils as au
 
 
