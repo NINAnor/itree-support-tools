@@ -152,9 +152,7 @@ class GeometryAttributes:
         self.logger.info("\tATTRIBUTE | EC_area:")
         self.logger.info("\tComputing the enclosing circle area... ")
         self.logger.info("\tATTRIBUTE | ratio_CA_ECA:")
-        self.logger.info(
-            "\tComputing the ratio crown area / enclosing circle area... "
-        )
+        self.logger.info("\tComputing the ratio crown area / enclosing circle area... ")
         self.logger.info("\tATTRIBUTE | outlier_ratio_CA_ECA:")
         self.logger.info(
             "\tClassifying the tree crown as:\n \
