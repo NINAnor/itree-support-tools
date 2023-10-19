@@ -568,5 +568,37 @@ def exportPoints_byPolygon(
     return output_points
 
 
+def exists_and_has_features(fc):
+    """Checks if a feature class exists and contains any features.
+
+    Args:
+        fc: The feature class to check.
+
+    Returns:
+        True if the feature class exists and contains any features, False otherwise.
+    """
+
+    if not arcpy.Exists(fc):
+        return False
+
+    count = arcpy.GetCount_management(fc)
+    if count == 0:
+        return False
+
+    return True
+
+
+# Get a list of all layers in the current map
+def clear_selection():
+    """ONLY WORKS IF ARCGIS IS OPENED"""
+    active_project = arcpy.mp.ArcGISProject("CURRENT")
+    map = active_project.listMaps()[0]
+    for layer in map.listLayers():
+        arcpy.SelectLayerByAttribute_management(layer, "CLEAR_SELECTION")
+
+    # for table in map.listTables():
+    # arcpy.SelectLayerByAttribute_management(table, "CLEAR_SELECTION")
+
+
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)

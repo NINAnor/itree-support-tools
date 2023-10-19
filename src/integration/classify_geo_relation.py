@@ -6,26 +6,6 @@ Case 3: a point is not overlapped by any polygon (0:1), model tree crown using o
 Case 4: a polygon does not contain any point (1:0), not used to train i-tree eco/dataset for extrapolation.
 """
 
-"""
-output:
-
-c4 crowns: non-itree crowns
-c4 stems: 0 
-
-c3 crowns: 0
-c3 stems: x points 
-
-v_crowns_c1_c2: itree crowns 
-# join v_crowns_c1_c2 with v_stems_c1_c2
-# count points in polygon 
-# if larger than 1 -> c2 crowns
-# else -> c1 crowns
-
-
-v_stems_c1_c2: x points 
-
-"""
-
 import logging
 import os
 

@@ -22,8 +22,6 @@ from src.utils import arcpy_utils as au
 def buffer_per_nb(
     neighbourhood_list: list, gdb_stems: str, spatial_reference: str, municipality
 ):
-    print("make main script")
-
     from pathlib import Path
 
     interim_path = Path(gdb_stems).parent

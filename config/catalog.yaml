@@ -10,6 +10,12 @@
 admin:
   type: filegdb
   filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/general/<<municipality>>_admindata.gdb
+  fc:
+    - analyseomrade
+    - analyseomrade_buffer200
+    - bydeler
+    - grunnkretser
+    - kommune
 
 neighbourhood:
     type: featureclass
@@ -111,6 +117,7 @@ geo_relation:
     fc: 
         - crowns_in_situ
         - crowns_all
+        - stems_in_situ
         - tops_all 
 # ----------------------------
 # METADATA

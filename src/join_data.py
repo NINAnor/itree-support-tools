@@ -33,6 +33,8 @@ def join_data(round):
     spatial_reference = parameters["spatial_reference"][municipality]
 
     # load data
+    gdb_admin = catalog["admin"]["filepath"]
+    fc_area_extent = os.path.join(gdb_admin, catalog["admin"]["fc"][4])
     fc_neighbourhood = catalog["neighbourhood"]["filepath"]
     key_neighbourhood = catalog["neighbourhood"]["key"]  # field name
 
@@ -65,7 +67,7 @@ def join_data(round):
     ls_neighbourhood = au.get_neighbourhood_list(fc_neighbourhood, key_neighbourhood)
 
     # test neighbourhood bærum
-    ls_neighbourhood = ["302401", "302402"]
+    ls_neighbourhood = ["302420", "302421", "302422"]
     logger.info(f"Neighbourhood list: {ls_neighbourhood}")
 
     if round == 1:
@@ -86,6 +88,7 @@ def join_data(round):
             municipality,
             spatial_reference,
             round,
+            fc_area_extent,
         )
 
         # 3. MODEL use a buffer based on in-situ radius to model "CASE 3" crowns
@@ -114,7 +117,10 @@ def join_data(round):
 
         # 2. VORONOI  tesselation to split "CASE 2" crowns
         voronoi.split_study_area(
-            gdb_crowns_round_2, fc_interim_input_stems, spatial_reference
+            gdb_crowns_round_2,
+            fc_interim_input_stems,
+            spatial_reference,
+            fc_area_extent,
         )
 
         # 3. MODEL use a buffer based on in-situ radius to model "CASE 3" crowns
@@ -163,6 +169,10 @@ def copy_output():
     fc_all_crowns = os.path.join(
         gdb_crowns_round_2, catalog["geo_relation_round_2"]["fc"][1]
     )
+    gdb_input_stems = catalog["interim_input_stems"]["filepath"]
+    fc_input_stems = os.path.join(
+        gdb_input_stems, catalog["interim_input_stems"]["fc"][0]
+    )
 
     # output
     gdb_geo_relation = catalog["geo_relation"]["filepath"]
@@ -173,6 +183,7 @@ def copy_output():
     fc_crowns_all_output = os.path.join(
         gdb_geo_relation, catalog["geo_relation"]["fc"][1]
     )
+    fc_output_stems = os.path.join(gdb_geo_relation, catalog["geo_relation"]["fc"][2])
 
     # copy
     import arcpy
@@ -181,6 +192,7 @@ def copy_output():
     logger.info("Copying results to geo_relation.gdb...")
     arcpy.CopyFeatures_management(fc_crowns_in_situ, fc_crowns_in_situ_output)
     arcpy.CopyFeatures_management(fc_all_crowns, fc_crowns_all_output)
+    arcpy.CopyFeatures_management(fc_input_stems, fc_output_stems)
 
 
 if __name__ == "__main__":
@@ -191,6 +203,9 @@ if __name__ == "__main__":
 
     # run script
     n_rounds = (1, 2)
+    # input(
+    #    "Close any ArcGIS Pro Instances before running this code! Press Enter to continue..."
+    # )
 
     # two rounds of point and polygon matching
     # round 1: per neighbourhood
@@ -202,3 +217,13 @@ if __name__ == "__main__":
     merge_data()
     # copy output to geo_relation.gdb
     copy_output()
+
+    # prepare for attribute computation
+    # TODO automate pre-processing
+
+    # input("Check if stem layer contains XY coord. Press Enter to continue...")
+    # input("MANUALLY Join stem to crown (one-to-one, contains, join_count = 1))")
+    # check if crown contains stem attr.
+
+    # Step 1 Overla analaysis
+    # subroutine overlay_attributes.py
