@@ -51,11 +51,11 @@ class GeometryAttributes:
         """
         self.logger.info("\tATTRIBUTE | crown_area:")
         self.logger.info(
-            f"\tComputing the crown area by using the polygon shape area... "
+            "\tComputing the crown area by using the polygon shape area... "
         )
         self.logger.info("\tATTRIBUTE | crown_peri:")
         self.logger.info(
-            f"\tComputing the crown perimeter by using the shape length... "
+            "\tComputing the crown perimeter by using the shape length... "
         )
 
         # Get the linear units of the feature layer's spatial reference
@@ -104,7 +104,7 @@ class GeometryAttributes:
                     cursor.updateRow(row)
         else:
             self.logger.info(
-                f"\tAll rows in field are already populated. Exiting function."
+                "\tAll rows in field are already populated. Exiting function."
             )
 
         au.round_fields_two_decimals(self.crown_filename, ["crown_area", "crown_peri"])
@@ -148,16 +148,16 @@ class GeometryAttributes:
         """
 
         self.logger.info("\tATTRIBUTE | EC_diam:")
-        self.logger.info(f"\tComputing the enclosing circle diameter... ")
+        self.logger.info("\tComputing the enclosing circle diameter... ")
         self.logger.info("\tATTRIBUTE | EC_area:")
-        self.logger.info(f"\tComputing the enclosing circle area... ")
+        self.logger.info("\tComputing the enclosing circle area... ")
         self.logger.info("\tATTRIBUTE | ratio_CA_ECA:")
         self.logger.info(
-            f"\tComputing the ratio crown area / enclosing circle area... "
+            "\tComputing the ratio crown area / enclosing circle area... "
         )
         self.logger.info("\tATTRIBUTE | outlier_ratio_CA_ECA:")
         self.logger.info(
-            f"\tClassifying the tree crown as:\n \
+            "\tClassifying the tree crown as:\n \
                 - normal (0) if ratio crown area / enclosing circle area >= 0.25\n \
                 - mild outlier (1) if ratio crown area / enclosing circle area < 0.25\n \
                 - extreme outlier (2) if ratio crown area / enclosing circle area < 0.02... "
@@ -207,7 +207,7 @@ class GeometryAttributes:
             )
         else:
             self.logger.info(
-                f"\tAll rows in field are already populated. Exiting function."
+                "\tAll rows in field are already populated. Exiting function."
             )
             # classify tree crown as normal, mild outlier or extreme outlier
 
@@ -226,7 +226,7 @@ class GeometryAttributes:
 
         else:
             self.logger.info(
-                f"\tAll rows in field are already populated. Exiting function."
+                "\tAll rows in field are already populated. Exiting function."
             )
 
         if keep_temp == False:
@@ -253,16 +253,16 @@ class GeometryAttributes:
         """
 
         self.logger.info("\tATTRIBUTE | CH_length:")
-        self.logger.info(f"\tComputing the convex hull length... ")
+        self.logger.info("\tComputing the convex hull length... ")
         self.logger.info("\tATTRIBUTE | CH_width:")
-        self.logger.info(f"\tComputing the convex hull width... ")
+        self.logger.info("\tComputing the convex hull width... ")
         self.logger.info("\tATTRIBUTE | CH_area:")
-        self.logger.info(f"\tComputing the convex hull area... ")
+        self.logger.info("\tComputing the convex hull area... ")
         self.logger.info("\tATTRIBUTE | ratio_CA_CHA:")
-        self.logger.info(f"\tComputing the ratio crown area / convex hull area... ")
+        self.logger.info("\tComputing the ratio crown area / convex hull area... ")
         self.logger.info("\tATTRIBUTE | outlier_ratio_CA_CHA:")
         self.logger.info(
-            f"\tClassifying the tree crown as:\n \
+            "\tClassifying the tree crown as:\n \
                 - normal (0) if ratio crown area / convex hull area >= 0.7\n \
                 - mild outlier (1) if ratio crown area / convex hull area < 0.7\n \
                 - extreme outlier (2) if ratio crown area / convex hull area < 0.6... "
@@ -321,7 +321,7 @@ class GeometryAttributes:
 
         else:
             self.logger.info(
-                f"\tAll rows in field are already populated. Exiting function."
+                "\tAll rows in field are already populated. Exiting function."
             )
 
         if keep_temp == False:
@@ -350,11 +350,11 @@ class GeometryAttributes:
         """
 
         self.logger.info("\tATTRIBUTE | EV_length:")
-        self.logger.info(f"\tComputing the envelope length... ")
+        self.logger.info("\tComputing the envelope length... ")
         self.logger.info("\tATTRIBUTE | EV_width:")
-        self.logger.info(f"\tComputing the envelope width... ")
+        self.logger.info("\tComputing the envelope width... ")
         self.logger.info("\tATTRIBUTE | EV_area:")
-        self.logger.info(f"\tComputing the envelope area... ")
+        self.logger.info("\tComputing the envelope area... ")
 
         v_envelope = os.path.join(self.path, "envelope_temp")
         arcpy.MinimumBoundingGeometry_management(
@@ -401,7 +401,7 @@ class GeometryAttributes:
 
         else:
             self.logger.info(
-                f"\tAll rows in field are already populated. Exiting function."
+                "\tAll rows in field are already populated. Exiting function."
             )
 
         # Calculate angle and NS and ES width
@@ -455,7 +455,7 @@ class GeometryAttributes:
 
         else:
             self.logger.info(
-                f"\tAll rows in field are already populated. Exiting function."
+                "\tAll rows in field are already populated. Exiting function."
             )
 
         if keep_temp == False:
@@ -480,7 +480,7 @@ class GeometryAttributes:
         """
         self.logger.info("\tATTRIBUTE | crown_diam:")
         self.logger.info(
-            f"\tComputing the crown diameter as maximum length of the convex hull... "
+            "\tComputing the crown diameter as maximum length of the convex hull... "
         )
         v_mbg = os.path.join(self.path, "mbg_temp")
         arcpy.MinimumBoundingGeometry_management(
@@ -495,7 +495,7 @@ class GeometryAttributes:
         in_table = self.crown_filename
         field = "crown_diam"
 
-        self.logger.info(f"\tAdding the attribute <<crown_diam>>... ")
+        self.logger.info("\tAdding the attribute <<crown_diam>>... ")
         au.addField_ifNotExists(in_table, field, "FLOAT")
 
         if au.check_isNull(in_table, field) == True:
@@ -510,7 +510,7 @@ class GeometryAttributes:
             arcpy.Delete_management(v_mbg)
         else:
             self.logger.info(
-                f"\tAll rows in field are already populated. Exiting function."
+                "\tAll rows in field are already populated. Exiting function."
             )
 
         au.round_fields_two_decimals(self.crown_filename, ["crown_diam"])

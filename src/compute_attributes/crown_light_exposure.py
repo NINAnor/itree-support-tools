@@ -233,7 +233,7 @@ with arcpy.da.SearchCursor(
                     "",
                     "ClippingGeometry",
                 )
-            except arcpy.ExecuteError as e:
+            except arcpy.ExecuteError:
                 # If the analysis fails, set CLE to NoData
                 cle_perc = -999
                 cle_values[str(tree_id)] = cle_perc

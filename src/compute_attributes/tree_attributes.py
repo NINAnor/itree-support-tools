@@ -9,7 +9,6 @@ from arcpy import env
 # local sub-package modules
 from src import (
     ADMIN_GDB,
-    DATA_PATH,
     INTERIM_PATH,
     SPATIAL_REFERENCE,
     AdminAttributes,
