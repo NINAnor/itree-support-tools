@@ -40,7 +40,7 @@ def export_c4_crowns(v_raw_crowns, v_raw_stems, v_crowns_c4):
         in_features=v_raw_stems, out_layer="lyr_point"
     )
 
-    # select points  that do not intersect with any in situ stems
+    # select crowns that do not intersect with any in situ stems
     arcpy.SelectLayerByLocation_management(
         in_layer=lyr_polygon,
         overlap_type="INTERSECT",

@@ -1,10 +1,19 @@
+# -*- coding: utf-8 -*-
+# --------------------------------------------------------------------------- #
+# Name: prepare_data.py
+# Date: 2023-10-19
+# Description: Prepare data for itree-eco analysis and extrapolation
+# Author: Willeke A'Campo
+# Dependencies: ArcGIS Pro 3.0+, Spatial Analyst
+# --------------------------------------------------------------------------- #
+
 import logging
 import os
 
-import src.decorators as dec
-from src.config import load_catalog, load_parameters
+import src.utils.decorators as dec
+from src.config.config import load_catalog, load_parameters
 from src.data import clean, load
-from src.logger import setup_logging
+from src.config.logger import setup_logging
 from src.utils import arcpy_utils as au
 
 
@@ -100,3 +109,5 @@ if __name__ == "__main__":
 
     # run script
     prepare_data()
+
+# --------------------------------------------------------------------------- #
