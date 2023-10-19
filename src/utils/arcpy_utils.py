@@ -600,5 +600,21 @@ def clear_selection():
     # arcpy.SelectLayerByAttribute_management(table, "CLEAR_SELECTION")
 
 
+def keep_fields(input_fc, fields_to_keep):
+    fields = arcpy.ListFields(input_fc)
+
+    fields_to_keep = [field.lower() for field in fields_to_keep]
+
+    # delete all fields except the following
+    fields_to_delete = []
+    for field in fields:
+        if field.name.lower() not in fields_to_keep:
+            fields_to_delete.append(field.name)
+
+    # if list is not empty list delete fields
+    if fields_to_delete != []:
+        arcpy.DeleteField_management(input_fc, fields_to_delete)
+
+
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
