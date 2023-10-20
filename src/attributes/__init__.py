@@ -1,5 +1,0 @@
-from src.attributes.admin_attributes import AdminAttributes
-from src.attributes.geometry_attributes import GeometryAttributes
-from src.attributes.insitu_attributes import InsituAttributes
-from src.attributes.geo_relation_rule_attributes import RuleAttributes
-from src.attributes.spatial_join import spatial_join

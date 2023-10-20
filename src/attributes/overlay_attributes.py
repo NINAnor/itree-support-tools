@@ -11,9 +11,9 @@ from attributes import (
     GeometryAttributes,
     InsituAttributes,
     RuleAttributes,
+    spatial_join,
 )
 from src.utils import arcpy_utils as au
-from attributes import spatial_join
 
 # TODO load data_paths from catalog.yaml
 # from src import INTERIM_PATH, ADMIN_GDB

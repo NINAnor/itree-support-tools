@@ -13,8 +13,8 @@ from src.attributes import (
     InsituAttributes,
     RuleAttributes,
 )
-from src.utils import arcpy_utils as au
 from src.config.config import load_parameters
+from src.utils import arcpy_utils as au
 
 parameters = load_parameters()
 municipality = parameters["municipality"]

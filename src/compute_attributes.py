@@ -24,16 +24,14 @@ import logging
 import os
 
 import src.utils.decorators as dec
-from src.config.config import load_catalog, load_parameters
-from src.config.logger import setup_logging
-from src.attributes.overlay_attributes import neighbourhood_stem, neighbourhood_crown
-from src.attributes import tree_attributes
 from src.attributes import (
     AdminAttributes,
-    InsituAttributes,
     GeometryAttributes,
     RuleAttributes,
 )
+from src.attributes.overlay_attributes import neighbourhood_crown
+from src.config.config import load_catalog, load_parameters
+from src.config.logger import setup_logging
 from src.utils import arcpy_utils as au
 
 
