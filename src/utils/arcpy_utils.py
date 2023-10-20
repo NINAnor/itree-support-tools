@@ -277,7 +277,7 @@ def calculateField_ifEmpty(in_table: str, field: str, expression: str, code_bloc
         logger.info(f"\tThe Column <{field}> does not contain null or empty values.")
 
 
-def check_isNull(in_table: str, field: str) -> bool:
+def check_isNull(in_table: str, field: str, type: str) -> bool:
     """
     Checks if a specified field in a feature class contains any null or empty values.
 
@@ -290,6 +290,9 @@ def check_isNull(in_table: str, field: str) -> bool:
     """
     # init logger
     logger = logging.getLogger(__name__)
+
+    # Check if column exists
+    addField_ifNotExists(in_table, field, type)
 
     with arcpy.da.SearchCursor(in_table, [field]) as cursor:
         null_count = 0

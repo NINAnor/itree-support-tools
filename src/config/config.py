@@ -38,9 +38,11 @@ def load_catalog():
     municipality = load_parameters()["municipality"]
 
     for key, value in catalog.items():
-        catalog[key]["filepath"] = value["filepath"].replace(
-            "<<municipality>>", municipality
-        )
+        # replace municipality in filepath
+        if "filepath" in catalog[key]:
+            catalog[key]["filepath"] = value["filepath"].replace(
+                "<<municipality>>", municipality
+            )
 
     return catalog
 

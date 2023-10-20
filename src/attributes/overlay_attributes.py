@@ -6,17 +6,24 @@ from arcpy import env
 
 # local sub-package utils
 # local sub-package modules
-from src import AdminAttributes, GeometryAttributes, InsituAttributes, RuleAttributes
-from src import arcpy_utils as au
-from src.compute_attributes.spatial_join import spatial_join
+from attributes import (
+    AdminAttributes,
+    GeometryAttributes,
+    InsituAttributes,
+    RuleAttributes,
+)
+from src.utils import arcpy_utils as au
+from attributes import spatial_join
 
 # TODO load data_paths from catalog.yaml
 # from src import INTERIM_PATH, ADMIN_GDB
 
 
-def neighbourhood(v_stem_path, v_crown_path, filegdb_path, v_neighbourhoods):
+# insitu crowns/stems
+def neighbourhood_stem(v_stem_path, v_crown_path, filegdb_path, v_neighbourhoods):
+    au.createGDB_ifNotExists(filegdb_path)
     logger = logging.getLogger(__name__)
-    fc_output = os.path.join(filegdb_path, "nb_tree")
+    fc_output = os.path.join(filegdb_path, "nb_tree_stem")
     if arcpy.Exists(fc_output):
         logger.info("Neighbourhood layer already exists. Skipping...")
         return
@@ -57,6 +64,40 @@ def neighbourhood(v_stem_path, v_crown_path, filegdb_path, v_neighbourhoods):
         a_src=["nb_code", "bydelnavn"],
         a_dest=["nb_code", "nb_name"],
     )
+
+
+# all crowns
+def neighbourhood_crown(v_crown_path, filegdb_path, v_neighbourhoods):
+    au.createGDB_ifNotExists(filegdb_path)
+    logger = logging.getLogger(__name__)
+    fc_output = os.path.join(filegdb_path, "nb_tree_crown")
+
+    au.addField_ifNotExists(v_crown_path, "nb_code", "TEXT")
+    au.addField_ifNotExists(v_crown_path, "nb_name", "TEXT")
+
+    join_field = "bydelnummer"
+    target_field = "nb_code"
+    spatial_join(
+        v_crown_path,
+        v_neighbourhoods,
+        fc_output,
+        join_field,
+        target_field,
+        match_option="LARGEST_OVERLAP",
+    )
+
+    fields_to_keep = [
+        "OBJECTID",
+        "Shape",
+        "tree_height_laser",
+        "tree_altit",
+        "geo_relation",
+        "nb_code",
+    ]
+
+    for field in arcpy.ListFields(fc_output):
+        if field.name not in fields_to_keep:
+            arcpy.DeleteField_management(fc_output, field.name)
 
 
 def street_tree(v_stem_path, v_crown_path, filegdb_path, v_area_data):
@@ -205,6 +246,9 @@ def land_use(v_stem_path, v_crown_path, filegdb_path, v_area_data):
 
 
 if __name__ == "__main__":
+    exit()
+
+    # TODO clean
     filegdb_path = os.path.join(INTERIM_PATH, "itree_attributes", "itree_overlay.gdb")
     v_crown_path = os.path.join(filegdb_path, "itree_crowns")
     v_stem_path = os.path.join(filegdb_path, "itree_stems")

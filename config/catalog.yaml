@@ -120,6 +120,57 @@ geo_relation:
         - stems_in_situ
         - tops_all 
         - crowns_not_detected
+
+# interim extrapolation
+reference_oslo:
+    type: excel
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/extrapolation/reference_oslo.xlsx
+    sheet_names:
+        - metadata
+        - reference_data
+
+target_municipality:
+    type: excel
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/extrapolation/target_<<municipality>>.xlsx
+    sheet_names:
+        - metadata
+        - target_data
+
+# interim compute attributes
+attr_input:
+    type: filegdb
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/input_attribute_calculation.gdb
+    fc:
+        - crowns_in_situ
+        - crowns_all
+        - stems_in_situ
+    description: input to attribute computation
+
+attr_overlay:
+    type: filegdb
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/attributes/attr_overlay.gdb
+    description: attributes computed in overlay_attributes.py
+
+attr_tree:
+    type: filegdb
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/attributes/attr_tree.gdb
+    description: attributes computed in tree_attributes.py
+
+attr_building_distance:
+    type: filegdb
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/attributes/attr_building_distance.gdb
+    description: attributes computed in building_distance.py
+
+attr_cle:
+    type: filegdb
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/attributes/attr_cle.gdb
+    description: attributes computed in cle.py
+
+# processed
+extrapolated_values:
+    type: csv
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/processed/<<municipality>>_extrapolated_values.csv
+
 # ----------------------------
 # METADATA
 # ----------------------------

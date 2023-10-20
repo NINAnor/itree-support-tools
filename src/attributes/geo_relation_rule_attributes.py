@@ -49,7 +49,9 @@ class RuleAttributes:
         # CASE 3: feltregistering
         # CASE 3: height_total_tree = (dbh*1.22)/(4.04**1.22)"
         au.addField_ifNotExists(self.fc_filename, "height_origin", "TEXT")
-
+        au.addField_ifNotExists(self.fc_filename, "height_insitu", "FLOAT")
+        au.addField_ifNotExists(self.fc_filename, "dbh", "FLOAT")
+        au.addField_ifNotExists(self.fc_filename, "geo_relation", "TEXT")
         codeblock = """def calcHeight_origin(geo_relation, tree_height_laser, height_insitu, dbh):
             if tree_height_laser != None:
                 return "laserdata"

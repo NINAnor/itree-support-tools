@@ -8,8 +8,8 @@ import arcpy
 
 
 def spatial_join(
-    v_crown_path,
-    overlay_data_source,
+    target_features,
+    overlay_source,
     outfc,
     join_field,
     target_field,
@@ -24,12 +24,11 @@ def spatial_join(
         join_field (_type_): _description_
         target_field (_type_): _description_
     """
-    targetFeatures = v_crown_path
-    joinFeatures = overlay_data_source
+    joinFeatures = overlay_source
 
     # Create a new fieldmappings and add the two input feature classes.
     fieldmappings = arcpy.FieldMappings()
-    fieldmappings.addTable(targetFeatures)
+    fieldmappings.addTable(target_features)
     fieldmappings.addTable(joinFeatures)
 
     # First get the fieldmap for the join field in the target table
@@ -55,7 +54,7 @@ def spatial_join(
 
     # Run the Spatial Join tool, using the defaults for the join operation and join type
     arcpy.analysis.SpatialJoin(
-        target_features=targetFeatures,
+        target_features=target_features,
         join_features=joinFeatures,
         out_feature_class=outfc,
         join_operation="JOIN_ONE_TO_ONE",

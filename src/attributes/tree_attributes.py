@@ -7,16 +7,20 @@ from arcpy import env
 # TODO load data_paths from catalog.yaml
 # local sub-package utils
 # local sub-package modules
-from src import (
-    ADMIN_GDB,
-    INTERIM_PATH,
-    SPATIAL_REFERENCE,
+from src.attributes import (
     AdminAttributes,
     GeometryAttributes,
     InsituAttributes,
     RuleAttributes,
 )
-from src import arcpy_utils as au
+from src.utils import arcpy_utils as au
+from src.config.config import load_parameters
+
+parameters = load_parameters()
+municipality = parameters["municipality"]
+spatial_reference = parameters["spatial_reference"][municipality]
+
+# ADMIN_GDB,INTERIM_PATH,spatial_reference,
 
 
 def join_crown_stem(filegdb_path):
@@ -25,20 +29,20 @@ def join_crown_stem(filegdb_path):
 
     # workspace settings
     env.overwriteOutput = True
-    env.outputCoordinateSystem = arcpy.SpatialReference(SPATIAL_REFERENCE)
+    env.outputCoordinateSystem = arcpy.SpatialReference(spatial_reference)
     env.workspace = filegdb_path
 
     # CROWN ID
     AdminAttribute.join_crownID_toTop()
 
 
-def tree_attributes(filegdb_path):
+def main(filegdb_path):
     logger = logging.getLogger(__name__)
     logger.info("CROWN ATTRIBUTES")
 
     # workspace settings
     env.overwriteOutput = True
-    env.outputCoordinateSystem = arcpy.SpatialReference(SPATIAL_REFERENCE)
+    env.outputCoordinateSystem = arcpy.SpatialReference(spatial_reference)
     env.workspace = filegdb_path
 
     # 0. CROWN ID
@@ -99,7 +103,7 @@ if __name__ == "__main__":
             and XY coord. Press Enter to continue..."
     )
 
-    tree_attributes(filegdb_path)
+    main(filegdb_path)
     join_crown_stem(filegdb_path)
 
     # BODO SPECIFIC HEIGHT

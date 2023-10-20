@@ -3,7 +3,7 @@ import os
 
 import arcpy
 
-from src import arcpy_utils as au
+from src.utils import arcpy_utils as au
 
 
 class GeometryAttributes:
@@ -90,7 +90,7 @@ class GeometryAttributes:
             self.crown_filename, "crown_peri", expression_perimeter
         )
 
-        if au.check_isNull(self.crown_filename, "outlier_CA") == True:
+        if au.check_isNull(self.crown_filename, "outlier_CA", "SHORT") == True:
             with arcpy.da.UpdateCursor(
                 self.crown_filename, ["crown_area", "outlier_CA"]
             ) as cursor:
@@ -183,8 +183,8 @@ class GeometryAttributes:
 
         # fill attribute fields
         if (
-            au.check_isNull(self.crown_filename, "EC_diam") == True
-            or au.check_isNull(self.crown_filename, "EC_area") == True
+            au.check_isNull(self.crown_filename, "EC_diam", "FLOAT") == True
+            or au.check_isNull(self.crown_filename, "EC_area", "FLOAT") == True
         ):
             # EC_diam and EC_area
             au.join_and_copy(
@@ -209,7 +209,10 @@ class GeometryAttributes:
             )
             # classify tree crown as normal, mild outlier or extreme outlier
 
-        if au.check_isNull(self.crown_filename, "outlier_ratio_CA_ECA") == True:
+        if (
+            au.check_isNull(self.crown_filename, "outlier_ratio_CA_ECA", "SHORT")
+            == True
+        ):
             with arcpy.da.UpdateCursor(
                 self.crown_filename, ["ratio_CA_ECA", "outlier_ratio_CA_ECA"]
             ) as cursor:
@@ -285,7 +288,7 @@ class GeometryAttributes:
         )
 
         # fill attribute fields
-        if au.check_isNull(self.crown_filename, field) == True:
+        if au.check_isNull(self.crown_filename, field, "FLOAT") == True:
             # CH_length, CH_width and CH_area
             au.join_and_copy(
                 t_dest=self.crown_filename,
@@ -382,9 +385,9 @@ class GeometryAttributes:
 
         # fill attribute fields
         if (
-            au.check_isNull(self.crown_filename, "EV_length") == True
-            or au.check_isNull(self.crown_filename, "EV_width") == True
-            or au.check_isNull(self.crown_filename, "EV_area") == True
+            au.check_isNull(self.crown_filename, "EV_length", "FLOAT") == True
+            or au.check_isNull(self.crown_filename, "EV_width", "FLOAT") == True
+            or au.check_isNull(self.crown_filename, "EV_area", "FLOAT") == True
         ):
             # CH_length, CH_width and CH_area
             au.join_and_copy(
@@ -423,7 +426,7 @@ class GeometryAttributes:
                             return None
                     """
 
-        if au.check_isNull(self.crown_filename, "EV_angle") == True:
+        if au.check_isNull(self.crown_filename, "EV_angle", "FLOAT") == True:
             arcpy.CalculatePolygonMainAngle_cartography(
                 v_envelope, "EV_angle", "GEOGRAPHIC"
             )
@@ -496,7 +499,7 @@ class GeometryAttributes:
         self.logger.info("\tAdding the attribute <<crown_diam>>... ")
         au.addField_ifNotExists(in_table, field, "FLOAT")
 
-        if au.check_isNull(in_table, field) == True:
+        if au.check_isNull(in_table, field, "FLOAT") == True:
             au.join_and_copy(
                 t_dest=self.crown_filename,
                 join_a_dest="crown_id",
