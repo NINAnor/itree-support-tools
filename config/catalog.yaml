@@ -129,6 +129,14 @@ reference_oslo:
         - metadata
         - reference_data
 
+reference_municipality:
+    type: excel
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/extrapolation/reference_<<municipality>>.xlsx
+    sheet_names:
+        - metadata
+        - reference_data
+        - unique_species
+
 target_municipality:
     type: excel
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/extrapolation/target_<<municipality>>.xlsx
