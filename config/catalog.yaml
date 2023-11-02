@@ -26,10 +26,14 @@ lookup_fields:
     type: excel
     filepath: ${DATA_PATH_LOCAL}/data/lookup_tables/lookup_attribute_fields.xlsx
     sheet_names:
-        - complete_attribute_list
-        - itree_eco_table
+        - complete_fields
         - crowns_table
+        - itree_resultater_fields
+        - itree_trekroner_fields
+        - oslo_fields
         - stems_table
+        - traer_fields
+        - trekroner_fields
 
 lookup_species:
     type: excel
@@ -178,6 +182,17 @@ attr_cle:
 extrapolated_values:
     type: csv
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/processed/<<municipality>>_extrapolated_values.csv
+
+# project deliverables
+tree_db:
+    type: filegdb
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/general/<<municipality>>_traer/<<municipality>>_bytraer.gdb
+    fc:
+        - itree_resultater
+        - registrerte_traer 
+        - registrerte_trekroner
+        - trekroner
+        - trekroner_xy 
 
 # ----------------------------
 # METADATA
