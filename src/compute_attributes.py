@@ -24,11 +24,7 @@ import logging
 import os
 
 import src.utils.decorators as dec
-from src.attributes import (
-    AdminAttributes,
-    GeometryAttributes,
-    RuleAttributes,
-)
+from src.attributes import AdminAttributes, GeometryAttributes, RuleAttributes
 from src.attributes.overlay_attributes import neighbourhood_crown
 from src.config.config import load_catalog, load_parameters
 from src.config.logger import setup_logging
