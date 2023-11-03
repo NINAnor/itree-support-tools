@@ -1,7 +1,7 @@
 itree-support-tools
 ==============================
 
-This repository provides a workflow for preparing municipal tree data for i-Tree Eco analysis and extrapolating the results to all tree crowns in the study area, using lidar-segmented tree crowns and auxiliary GIS datasets.
+This repository provides a workflow for preparing municipal tree data for i-Tree Eco analysis and extrapolating the results to full the study area extent, using lidar-segmented tree crowns and auxiliary GIS datasets.
 
 ------------
 
@@ -9,7 +9,7 @@ Code is provided for the following tasks:
 
 1. **i-Tree Eco Data Preparation:** preparing an input dataset for i-Tree Eco analysis by supplementing existing municipal tree inventories with crown geometry from the ALS data and auxiliary spatial datasets following the workflow by *Cimburova and Barton (2020).*  
 
-2. **i-Tree Eco Extrapolation:** extrapolating the outputs from i-Tree Eco analysis** to all trees in the study area following the workflow by Cimburova and Barton (2020).    
+2. **i-Tree Eco Extrapolation:** extrapolating the outputs from i-Tree Eco analysis to all trees in the study area following the workflow by Cimburova and Barton (2020).    
 
 The repository is applied on the Norwegian municipalities: *Bærum, Bodø, Kristiansand* and *Oslo.* 
 
@@ -41,7 +41,7 @@ The code is build in an ArcGIS Pro 3.1.0. conda environment with the spatial ana
         make codestyle
     ```
 
-    **note:** As `pre-commit` unfortunately often gives acces-denied errors on Windows OS, I would recommend to run `make codestyle` command before you commit your changes. This command runs black, isort and ruff on all files.
+    **note:** As `pre-commit` unfortunately often gives acces-denied errors on Windows OS, I would recommend to run `make codestyle` command before you commit your changes. This command runs black, isort and ruff on all files using the configuration specified in the [pyproject.toml](pyproject.toml) file.
 
     c. Install your local package 
     ```bash
@@ -64,7 +64,7 @@ The code is build in an ArcGIS Pro 3.1.0. conda environment with the spatial ana
 
 ### Workflow | i-Tree Eco Data Preparation
 
-Detailed description of the workflow is provided in the [project note](docs/data_preparation.md).
+Detailed description of the workflow is provided in the [project note (in prep)](docs/data_preparation.md).
 
 1. Prepare Data
     **entry point:** `prepare_data.py`
