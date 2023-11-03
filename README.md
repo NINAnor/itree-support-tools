@@ -124,10 +124,12 @@ Detailed description of the workflow is provided in the [project note](docs/extr
 
 ### References 
 - Cimburova, Z., & Barton, D. N. (2020). The potential of geospatial analysis and Bayesian networks to enable i-Tree Eco assessment of existing tree inventories. Urban Forestry & Urban Greening, 55, 126801. https://doi.org/10.1016/j.ufug.2020.126801
-- *text here*
+
 
 ### Acknowledgments
 
 *This repository is part of the project:*
 
 **TREKRONER Prosjektet** | Trærs betydning for klimatilpasning, karbonbinding, økosystemtjenester og biologisk mangfold. 
+
+This repository uses code adapted fromt the repository [i-Tree-Eco](https://github.com/zofie-cimburova/i-Tree-Eco) by Cimburova, Z. 2022, this repository is licensed under the GNU General Public License (GPL).
