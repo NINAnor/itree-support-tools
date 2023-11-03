@@ -1,3 +1,8 @@
+"""
+Code adapted from: https://github.com/zofie-cimburova/i-Tree-Eco/blob/main/distance_direction.py
+COPYRIGHT:  (C) 2022 by Zofie Cimburova
+"""
+
 import logging
 import os
 
