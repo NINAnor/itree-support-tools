@@ -43,7 +43,7 @@ The code is build in an ArcGIS Pro 3.1.0. conda environment with the spatial ana
 
     **note:** As `pre-commit` unfortunately often gives acces-denied errors on Windows OS, I would recommend to run `make codestyle` command before you commit your changes. This command runs black, isort and ruff on all files using the configuration specified in the [pyproject.toml](pyproject.toml) file.
 
-    c. Install your local package 
+    c. Install as a local package 
     ```bash
         pip install .
         pip install -e . # for development

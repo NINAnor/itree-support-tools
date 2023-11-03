@@ -89,5 +89,10 @@ temp/*
 log/*
 !log/.gitkeep
 
+# exclude data from source control by default
+/data/*
+!data/.gitkeep 
+!data/municipality/.gitkeep
+
 # vscode
 .vscode
