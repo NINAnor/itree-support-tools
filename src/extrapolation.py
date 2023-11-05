@@ -1,14 +1,13 @@
 import logging
-import os
 
 import src.utils.decorators as dec
-from src.config.logger import setup_logging
 from extrapolation.nodes import pipeline
+from src.config.logger import setup_logging
 
 
 @dec.timer
 def main():
-    pipeline(reference_municipality="bodo")
+    pipeline(reference_municipality="oslo")
 
     return
 

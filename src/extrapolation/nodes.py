@@ -1,6 +1,8 @@
 # nodes.py
 import logging
+
 import pandas as pd
+
 from src.config.config import load_catalog, load_parameters
 
 
@@ -33,16 +35,16 @@ def load_reference(reference_municipality="oslo"):
 
     # Load metadata into df
     df_metadata = pd.read_excel(reference_excel, sheet_name="metadata")
-    df_metadata = df_metadata[["reference_data_names", "python_colnames", "dtype"]]
+    df_metadata = df_metadata[["reference_colnames", "python_colnames", "dtype"]]
 
     # Load species list
     df_species = pd.read_excel(reference_excel, sheet_name="unique_species")
-    species_bins = df_species["species"].tolist()
+    species_bins = df_species["scientific_name"].tolist()
 
     # Log Reference Data info
-    logger.info(f"Reference data ({df_reference.shape}): /n{df_reference.head()}")
-    logger.info(f"Metadata ({df_metadata.shape}): /n{df_metadata.head()}")
-    logger.info(f"species ({df_species.shape}): /n{species_bins}")
+    logger.info(f"Reference data ({df_reference.shape}): \n{df_reference.head()}")
+    logger.info(f"Metadata {df_metadata.shape}: \n{df_metadata.head()}")
+    logger.info(f"species {df_species.shape}: \n{species_bins[:5]}")
 
     return df_reference, df_metadata, df_species, species_bins
 
@@ -60,6 +62,23 @@ def load_target():
     target_excel = catalog["target_municipality"]["filepath"]
     target_sheet = catalog["target_municipality"]["sheet_names"][1]
     logger.info(f"Loading target data from sheet: {target_sheet}")
+
+    # load csv into df target_oslo.csv
+    df_target = pd.read_excel(target_excel, sheet_name=target_sheet)
+
+    # log target data info
+    logger.info(f"Target data ({df_target.shape}): /n{df_target.head()}")
+
+    # count of itree_spec == 0 (set null to 0 covert to int first)
+    df_target["itree_spec"] = df_target["itree_spec"].fillna(0)
+    df_target["itree_spec"] = df_target["itree_spec"].astype(int)
+    count = df_target["itree_spec"].value_counts()
+    logger.info(f"itree_spec == 0: {count[0]}")
+    logger.info(f"itree_spec == 1 (removed from target): {count[1]}")
+
+    # remove all rows in column itree_spec where itree_spec = 0
+    df_target = df_target[df_target["itree_spec"] == 0]
+    logger.info(f"Target data loaded into df_target: {df_target.shape}")
 
     return df_target
 
@@ -84,7 +103,7 @@ def load_output():
 def column_cleaner(df, df_metadata):
     # trim and rename columns using metadata
     col_name_mapping = dict(
-        zip(df_metadata["urban-treeDetection_colnames"], df_metadata["python_colnames"])
+        zip(df_metadata["reference_colnames"], df_metadata["python_colnames"])
     )
     df.columns = df.columns.str.strip()
     df.rename(columns=col_name_mapping, inplace=True)
@@ -134,19 +153,59 @@ def prepare_reference(df_reference, df_metadata, df_species, species_bins):
     - remove negative values
     """
 
+    # set up logging
+    logger = logging.getLogger(__name__)
     df = df_reference.copy()
-    df = column_cleaner(df, df_metadata)
-    logger.info(f"Reference data cols: {df.columns}")
+
+    # remove all rows in column itree_spec where itree_spec = 0
+    df = df[df["itree_spec"] != 0]
     logger.info(f"Remove null values: {df.isnull().sum()}")
 
-    # Remove missing values
-    df = df.dropna()
+    df = column_cleaner(df, df_metadata)
+    logger.info(f"Reference data cols: {df.columns}")
 
-    # Remove negative values
+    # remove all rows with missing values in columns: crown_area, height_total_tree,scientific_name, pollution_zone
+    logger.info(f"Null values in crown_area: {df['crown_area'].isnull().sum()}")
+    logger.info(
+        f"Null values in height_total_tree: {df['height_total_tree'].isnull().sum()}"
+    )
+    logger.info(
+        f"Null values in scientific_name: {df['scientific_name'].isnull().sum()}"
+    )
+    logger.info(f"Null values in pollution_zone: {df['pollution_zone'].isnull().sum()}")
 
-    # Return the prepared data
+    df = df.dropna(
+        subset=["crown_area", "height_total_tree", "scientific_name", "pollution_zone"]
+    )
 
-    return
+    # Set negative values to 0 for cols and round to 3 decimals
+    # crown_area height_total_tree
+    # co2_storage_kg co2_seq_kg_yr runoff_m3_yr
+    # pollution_g_yr pollution_co pollution_o3 pollution_no2 pollution_so2 pollution_pm25 totben_cap
+
+    # TODO move to catalog
+    cols = [
+        "crown_area",
+        "height_total_tree",
+        "co2_storage_kg",
+        "co2_seq_kg_yr",
+        "runoff_m3_yr",
+        "pollution_g_yr",
+        "pollution_co",
+        "pollution_o3",
+        "pollution_no2",
+        "pollution_so2",
+        "pollution_pm25",
+        "totben_cap",
+    ]
+
+    # set negative values to 0
+    df[cols] = df[cols].clip(lower=0)
+    # round to 3 decimals
+    df[cols] = df[cols].round(3)
+    logger.info(f"DF cleaned for null values and clipped negative values: {df.shape}")
+
+    return df
 
 
 def pipeline(reference_municipality="oslo"):
@@ -171,7 +230,6 @@ def pipeline(reference_municipality="oslo"):
 
 def train_model(prepared_data):
     # Train a linear regression model
-    model = np.polyfit(prepared_data[:, 0], prepared_data[:, 1], 1)
 
     # Return the trained model
     return model
@@ -183,3 +241,14 @@ def score_model(trained_model, input_data):
 
     # Return the predicted scores
     return predicted_scores
+
+
+def evaluate_model(predicted_scores, actual_scores):
+    # Calculate and return the RMSE
+    rmse = np.sqrt(np.mean((predicted_scores - actual_scores) ** 2))
+    return rmse
+
+
+def predict(prepared_data, trained_model):
+    # Return the model predictions
+    return trained_model.predict(prepared_data)
