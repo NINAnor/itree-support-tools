@@ -7,7 +7,7 @@ requirements = [
 setup(
     name="itree-support-tools",
     version="0.1.0",
-    description="Tools for data preparation of iTree projects and extrapolation of iTree results.",
+    description="Support tools for i-Tree Eco projects: data preparation and data extrapolation.",
     license="MIT",
     author="willeke acampo",
     author_email="willeke.acampo@nina.no",
