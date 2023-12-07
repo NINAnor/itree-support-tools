@@ -5,9 +5,7 @@ import arcpy
 
 # local sub-package utils
 # local sub-package modules
-from attributes import (
-    spatial_join,
-)
+from attributes import spatial_join
 from src.utils import arcpy_utils as au
 
 # TODO load data_paths from catalog.yaml
