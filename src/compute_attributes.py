@@ -24,11 +24,16 @@ import logging
 import os
 
 import src.utils.decorators as dec
-from src.attributes import AdminAttributes, GeometryAttributes, RuleAttributes
-from src.attributes.overlay_attributes import neighbourhood_crown
+from src.attributes.classes import AdminAttributes, GeometryAttributes, RuleAttributes
+from src.attributes.overlay_attributes import neighbourhood_crown, neighbourhood_stem
 from src.config.config import load_catalog, load_parameters
 from src.config.logger import setup_logging
 from src.utils import arcpy_utils as au
+
+
+def check_and_perform(attribute, type, action):
+    if au.check_isNull(fc_crowns_all, attribute, type):
+        action()
 
 
 @dec.timer
@@ -65,7 +70,115 @@ def load_data():
     )
 
 
-# recompute pollution_zone
+@dec.timer
+def crown_polygon_attributes(
+    input_gdb, fc_crowns_all, fc_stems, gdb_overlay, fc_neighbourhood
+):
+    # ------------ GET CROWN ID ------------ #
+    # 1. Calc nb_code
+    check_and_perform(
+        "nb_code",
+        "TEXT",
+        lambda: neighbourhood_crown(fc_crowns_all, gdb_overlay, fc_neighbourhood),
+    )
+
+    # 2. Calc ID (from nb_code) for all crowns!
+    check_and_perform(
+        "crown_id",
+        "TEXT",
+        lambda: AdminAttributes(input_gdb, fc_crowns_all, fc_stems).attr_crownID(
+            "nb_code"
+        ),
+    )
+
+    # ------------ TREE HEIGHT ------------- #
+    check_and_perform(
+        "total_tree_heigth",
+        "FLOAT",
+        lambda: RuleAttributes(input_gdb, fc_crowns_all).attr_ruleHeight(),
+    )
+
+    # ------------ CROWN AREA ------------- #
+    check_and_perform(
+        "crown_area",
+        "FLOAT",
+        lambda: GeometryAttributes(input_gdb, fc_crowns_all, fc_stems).attr_crownArea(),
+    )
+
+    # ------------ POLLUTION ZONE ---------- #
+    # TODO automate this step (see below)
+    input(
+        "MANUALLY: Add pollution_zone to crowns.\
+            \n - download pollution raster\
+            \n - reproject to correct utm zone\
+            \n - extract values to point (crowns_xy) \
+            \n - check that all crowns have a value \
+            \n - export table to Excel (target_municipality)\
+            \n Press Enter to continue..."
+    )
+
+
+@dec.timer
+def itree_point_attributes(
+    input_gdb,
+    fc_crowns_insitu,
+    fc_stems,
+    fc_neighbourhood,
+    gdb_overlay,
+    gdb_tree_attributes,
+    gdb_building_distance,
+    gdb_cle,
+):
+    # ------------ GET CROWN ID ------------ #
+    neighbourhood_stem(fc_stems, fc_crowns_insitu, gdb_overlay, fc_neighbourhood)
+
+    # ------------ INIT CLASSES ------------ #
+    AdminAttribute = AdminAttributes(input_gdb, fc_crowns_insitu, fc_stems)
+    InsituAttribute = InsituAttributes(input_gdb, fc_crowns_insitu)
+    GeometryAttribute = GeometryAttributes(input_gdb, fc_crowns_insitu, fc_stems)
+    RuleAttribute = RuleAttributes(input_gdb, fc_crowns_insitu)
+
+    # ------------ PIPELINE 1: OVERLAY ANALYSIS ------------ #
+    from src.attributes.overlay import pipeline
+
+    # interim DB: gdb_overlay
+    # itree-support-tools/interim/attributes/attr_overlay.gdb
+    pipeline.overlay(
+        v_stem_path=fc_stems,
+        v_crown_path=fc_crowns_insitu,
+        filegdb_path=gdb_overlay,
+        v_neighbourhoods=fc_neighbourhood,
+        v_area_data=v_area_data,
+        v_property_data=v_property_data,
+    )
+
+    # ------------ PIPELINE 2: TREE ATTRIBUTES ------------ #
+    from src.attributes.tree import pipeline
+
+    # interim DB: gdb_tree_attributes
+    # itree-support-tools/interim/attributes/attr_tree.gdb
+    pipeline.tree(gdb_tree_attributes, fc_crowns_insitu)
+
+    # ------------ MODULE 1: BUILDING DISTANCE ------------ #
+    from src.attributes import distance_to_building as dtb
+
+    # interim DB: attr_building_distance.gdb
+    dtb.distance_to_building(
+        gdb_building_distance, v_stem_path, v_crown_path, v_residential_buildings
+    )
+
+    # ------------ MODULE 2: CROWN LIGHT EXPOSURE (CLE) ----#
+    # (C) 2022 by Zofie Cimburova
+
+    # interim DB: attr_cle.gdb
+    logger.info("Run CROWN LIGHT EXPOSURE from separate script")
+    logger.info("see src/attributes/crown_light_exposure.py")
+    logger.info(f"Run to a separate gdb: {gdb_cle}")
+    logger.info(
+        "PLEASE BACKUP YOUR DATA BEFORE THIS ANALYSIS, DATA CORRUPTION MAY OCCUR."
+    )
+
+    return
 
 
 if __name__ == "__main__":
@@ -76,9 +189,9 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
     # input
-    # input("Manually join stem_in_situ attributes to crowns. Press Enter to continue...")
+    input("Manually join stem_in_situ attributes to crowns. Press Enter to continue...")
 
-    # load data
+    # load project data
     (
         input_gdb,
         fc_crowns_insitu,
@@ -88,50 +201,22 @@ if __name__ == "__main__":
         gdb_overlay,
     ) = load_data()
 
-    # ALL CROWNS
-    # ------------ GET CROWN ID ------------ #
-    # 1. Calc nb_code
-    if au.check_isNull(fc_crowns_all, "nb_code", "TEXT"):
-        neighbourhood_crown(fc_crowns_all, gdb_overlay, fc_neighbourhood)
+    # auxillary datasets
+    # TODO move to catalog.yaml
+    v_neighbourhoods = os.path.join(ADMIN_GDB, "bydeler")
+    v_area_data = r"path/to/%municipality%_arealdata.gdb"
+    v_property_data = r"path/to/municipality_eiendom.gdb"
+    v_residential_buildings = (
+        r"path/to/%municipality%_arealdata.gdb/fkb_boligbygg_omrade"
+    )
 
-    # 2. Calc ID (from nb_code) for all crowns!
-    if au.check_isNull(fc_crowns_all, "crown_id", "TEXT"):
-        AdminAttribute = AdminAttributes(input_gdb, fc_crowns_all, fc_stems)
-        AdminAttribute.attr_crownID("nb_code")
+    # set env workspace
+    env.workspace = input_gdb
 
-    # ------------ TREE HEIGHT ------------- #
-    if au.check_isNull(fc_crowns_all, "total_tree_heigth", "FLOAT"):
-        # init Class
-        RuleAttribute = RuleAttributes(input_gdb, fc_crowns_all)
-        # TREE HEIGHT (first!) (height_origin, height_total_tree)
-        RuleAttribute.attr_ruleHeight()
-
-    # ------------ CROWN AREA ------------- #
-    if au.check_isNull(fc_crowns_all, "crown_area", "FLOAT"):
-        # init Class
-        GeometryAttribute = GeometryAttributes(input_gdb, fc_crowns_all, fc_stems)
-        GeometryAttribute.attr_crownArea()
-
-    # ------------ POLLUTION ZONE ---------- #
-    if au.check_isNull(fc_crowns_all, "pollution_zone", "TEXT"):
-        input(
-            "MANUALLY: Add pollution_zone to crowns.\
-            \n - download pollution raster\
-            \n - reproject to correct utm zone\
-            \n - extract values to point (crowns_xy) \
-            \n - check that all crowns have a value \
-            \n - export table to Excel (target_municipality)\
-            \n Press Enter to continue..."
-        )
-
-
-# --------------------------------------------------------------------------- #
-# REGISTERED TREES
-# neighbourhood_stem(fc_stems, fc_crowns_insitu, gdb_overlay, fc_neighbourhood)
-# join crownid to stem
-
-# init class to calculate attributes
-# AdminAttribute = AdminAttributes(input_gdb, fc_crowns_insitu, fc_stems)
-# InsituAttribute = InsituAttributes(input_gdb, fc_crowns_insitu)
-# GeometryAttribute = GeometryAttributes(input_gdb, fc_crowns_insitu, fc_stems)
-# RuleAttribute = RuleAttributes(input_gdb, fc_crowns_insitu)
+    load_data()
+    crown_polygon_attributes(
+        input_gdb, fc_crowns_all, fc_stems, gdb_overlay, fc_neighbourhood
+    )
+    itree_point_attributes(
+        input_gdb, fc_crowns_insitu, fc_stems, gdb_overlay, fc_neighbourhood
+    )

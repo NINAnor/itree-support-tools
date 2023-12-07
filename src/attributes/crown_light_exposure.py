@@ -441,3 +441,30 @@ with arcpy.da.UpdateCursor(v_trees_poly, [a_ID, a_CLE]) as cursor:
         cursor.updateRow(row)
 
 # ==============================================================
+
+
+# ==============================================================
+# Field calculator code blocks
+codeblock = """def calculate_cle_class(cle_percent):
+if cle_percent <= -999:
+    return 0
+if cle_percent <= 0.125:
+    return 5
+elif cle_percent <= 0.375:
+    return 4
+elif cle_percent <= 0.625:
+    return 3
+elif cle_percent <= 0.875:
+    return 2
+else:
+    return 1
+"""
+# calculate_cle_class(!cle_percent!)
+
+codeblock = """
+def calculate_cle_class(cle_percent):
+if cle_percent <= -999:
+    return 0
+else:
+    return cle_percent
+"""

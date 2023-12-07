@@ -161,22 +161,22 @@ attr_input:
 attr_overlay:
     type: filegdb
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/attributes/attr_overlay.gdb
-    description: attributes computed in overlay_attributes.py
+    description: attributes computed in overlay pipeline
 
 attr_tree:
     type: filegdb
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/attributes/attr_tree.gdb
-    description: attributes computed in tree_attributes.py
+    description: attributes computed in tree pipeline
 
 attr_building_distance:
     type: filegdb
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/attributes/attr_building_distance.gdb
-    description: attributes computed in building_distance.py
+    description: attributes computed in building_distance.py module
 
 attr_cle:
     type: filegdb
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/attributes/attr_cle.gdb
-    description: attributes computed in cle.py
+    description: attributes computed in cle.py module 
 
 # processed
 extrapolated_values:

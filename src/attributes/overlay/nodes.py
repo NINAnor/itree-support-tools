@@ -2,15 +2,10 @@ import logging
 import os
 
 import arcpy
-from arcpy import env
 
 # local sub-package utils
 # local sub-package modules
 from attributes import (
-    AdminAttributes,
-    GeometryAttributes,
-    InsituAttributes,
-    RuleAttributes,
     spatial_join,
 )
 from src.utils import arcpy_utils as au
@@ -242,49 +237,5 @@ def land_use(v_stem_path, v_crown_path, filegdb_path, v_area_data):
     )
 
 
-# TODO add address using matrikkel vegadresse (closest)
-
-
 if __name__ == "__main__":
-    exit()
-
-    # TODO clean
-    filegdb_path = os.path.join(INTERIM_PATH, "itree_attributes", "itree_overlay.gdb")
-    v_crown_path = os.path.join(filegdb_path, "itree_crowns")
-    v_stem_path = os.path.join(filegdb_path, "itree_stems")
-    v_crown = "itree_crowns"
-    v_stem = "itree_stems"
-
-    v_neighbourhoods = os.path.join(ADMIN_GDB, "bydeler")
-
-    env.workspace = filegdb_path
-
-    # P-DRIVE PATHS KRISTIANSAND
-    v_area_data = r"P:\152022_itree_eco_ifront_synliggjore_trars_rolle_i_okosyst\data\kristiansand\general\kristiansand_arealdata.gdb"
-    v_property_data = r"P:\152022_itree_eco_ifront_synliggjore_trars_rolle_i_okosyst\data\kristiansand\general\kristiansand_eiendom.gdb"
-    v_residential_buildings = r"P:\152022_itree_eco_ifront_synliggjore_trars_rolle_i_okosyst\data\kristiansand\general\kristiansand_arealdata.gdb\fkb_boligbygg_omrade"
-
-    # # P-DRIVE PATHS BODO
-    # v_area_data = r"P:\152022_itree_eco_ifront_synliggjore_trars_rolle_i_okosyst\data\bodo\general\bodo_arealdata.gdb"
-    # v_property_data = r"P:\152022_itree_eco_ifront_synliggjore_trars_rolle_i_okosyst\data\bodo\general\bodo_eiendom.gdb"
-    # v_residential_buildings = r"P:\152022_itree_eco_ifront_synliggjore_trars_rolle_i_okosyst\data\bodo\general\bodo_arealdata.gdb\fkb_boligbygg_omrade"
-
-    # init class to calculate attributes
-    AdminAttribute = AdminAttributes(filegdb_path, v_crown, v_stem)
-    InsituAttribute = InsituAttributes(filegdb_path, v_crown)
-    GeometryAttribute = GeometryAttributes(filegdb_path, v_crown, v_stem)
-    RuleAttribute = RuleAttributes(filegdb_path, v_crown)
-
-    # TODO automate pre-processing
-    # Add XY to stem points
-    # Join stem to crown (one-to-one, contains, join_count = 1)
-    input(
-        "Check if crown layer contains tree stem attributes\
-            and XY coord. Press Enter to continue..."
-    )
-
-    # Step 1 OVERLAY ANAYLIS (First step to ensure correct neighbourhood code)
-    neighbourhood(v_stem_path, v_crown_path, filegdb_path, v_neighbourhoods)
-    street_tree(v_stem_path, v_crown_path, filegdb_path, v_area_data)
-    privat_public(v_stem_path, v_crown_path, filegdb_path, v_property_data)
-    land_use(v_stem_path, v_crown_path, filegdb_path, v_area_data)
+    pass

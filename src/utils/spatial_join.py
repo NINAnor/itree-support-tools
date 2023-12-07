@@ -45,13 +45,6 @@ def spatial_join(
 
     fieldmappings.replaceFieldMap(FieldIndex, fieldmap)
 
-    # Delete fields that are no longer applicable, such as city CITY_NAME and CITY_FIPS
-    # as only the first value will be used by default
-    # x = fieldmappings.findFieldMapIndex("n_grunnkrets")
-    # fieldmappings.removeFieldMap(x)
-    # y = fieldmappings.findFieldMapIndex("objtype")
-    # fieldmappings.removeFieldMap(y)
-
     # Run the Spatial Join tool, using the defaults for the join operation and join type
     arcpy.analysis.SpatialJoin(
         target_features=target_features,
