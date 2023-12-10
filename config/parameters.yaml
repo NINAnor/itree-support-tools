@@ -6,3 +6,126 @@ spatial_reference:
   kristiansand: "ETRS 1989 UTM Zone 32N"
   oslo: "ETRS 1989 UTM Zone 32N"
   bodo: "ETRS 1989 UTM Zone 33N"
+
+
+
+# # NINA Project memo 397 (Barton, D. & Venter, Z., 2022) 
+# pollution zone, crown area and tree height are the 3 variables that mos explain variation in ecossytem services (Cimburova and Barton, 2020)
+# pollution_g = sum(pollution_NO2 + pollution_PM25 + pollution_SO2)
+# pollution and O3 and CO are not considered air pollutants in Norway (priced to zero) an therefore not included 
+# PM10 is included in PM25
+# The tree (canopy height, diameter at breast height, crown
+# area) and ecosystem condition (air pollution) variables most strongly predicting ecosystem
+# services in the sample of municipally managed trees were retained for the Bayesian
+# network model (Cimburova and Barton 2020).
+
+cols_ref_oslo: 
+  - "tree_id"
+  - "itree_spec"
+  - "schools"
+  - "area_code"
+  - "district_code"
+  - "norwegian_name"
+  - "scientific_name"
+  - "species_origin"
+  - "dbh"
+  - "dbh_origin"
+  - "height_total_tree"
+  - "height_origin"
+  - "crown_area"
+  - "crown_diam"
+  - "crown_origin"
+  - "pollution_zone"
+  - "co2_storage_kg"
+  - "co2_seq_kg_yr"
+  - "runoff_m3"
+  - "pollution_no2"
+  - "pollution_pm25"
+  - "pollution_so2"
+  - "pollution_g"
+  - "totben_cap"
+  - "totben_cap_ca"
+
+cols_target_oslo:
+  - "dbh"
+  - "height_total_tree"
+  - "crown_area"
+  - "crown_diam"
+  - "co2_storage_kg"
+  - "co2_seq_kg_yr"
+  - "runoff_m3"
+  - "pollution_no2"
+  - "pollution_pm25"
+  - "pollution_so2"
+  - "pollution_g"
+  - "totben_cap"
+  - "totben_cap_ca"
+
+cols_ref:
+  - "tree_id"
+  - "itree_spec"
+  - "schools"
+  - "area_code"
+  - "district_code"
+  - "norwegian_name" # should be encoded 
+  - "scientific_name"
+  - "species_origin"
+  - "dbh"
+  - "dbh_origin"
+  - "height_total_tree"
+  - "height_origin"
+  - "crown_area"
+  - "crown_diam"
+  - "crown_origin"
+  - "pollution_zone" # is encoded (1 = low, 2 = medium, 3 = high)
+  - "co2_storage_kg"
+  - "co2_seq_kg_yr"
+  - "runoff_m3"
+  - "pollution_g"
+  - "totben_cap"
+  - "totben_cap_ca"
+
+cols_target:
+  - "dbh"
+  - "height_total_tree"
+  - "crown_area"
+  - "crown_diam"
+  - "co2_storage_kg"
+  - "co2_seq_kg_yr"
+  - "runoff_m3"
+  - "pollution_g"
+  - "totben_cap"
+  - "totben_cap_ca"
+
+rf_indiviual_es:
+    reference_literature: NINA Project memo 397 (Barton, D. & Venter, Z., 2022)
+    model_options:
+      test_size: 0.2
+      random_state: 3
+      response:
+        - co2_storage_kg 
+        - co2_seq_kg_yr 
+        - runoff_m3 
+        - pollution_no2 
+        - pollution_pm25 
+        - pollution_so2 
+        - pollution_g # sum(NO2, PM25 and SO2)
+      predictors:
+        - height_total_tree # tree height
+        - crown_area
+        - pollution_zone # zone 1, zone 3, zone 3
+
+rf_total_cap:
+  reference_literature: Barton, D. 2023 
+  model_options:
+    test_size: 0.2
+    random_state: 3
+    response:
+      - totben_cap # total benefits (Nkr/tree)
+      - totben_cap_ca # total benefits per crown area (Nkr/m2): totben_cap / crown_area
+    predictors:
+      - norwegian_name # species
+      - dbh # diameter at breast height
+      - height_total_tree # tree height
+      - crown_area
+      - pollution_zone # zone 1, zone 3, zone 3

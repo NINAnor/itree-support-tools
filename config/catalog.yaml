@@ -6,7 +6,7 @@
 # DATA CATALOG
 # ----------------------------
 
-# general data 
+# GENERAL DATA
 admin:
   type: filegdb
   filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/general/<<municipality>>_admindata.gdb
@@ -42,7 +42,7 @@ lookup_species:
         - itree_species_lookup
         - naturtype_lookup
 
-# raw data
+# RAW DATA (input to integration pipeline)
 raw_in_situ_trees:
     type: featureclass
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/raw/<<municipality>>_insitu_bytraer.gdb/itree_traer
@@ -90,7 +90,7 @@ raw_laser_trekroner:
     type: featureclass
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/raw/<<municipality>>_laser_bytraer.gdb/trekroner
 
-# interim data
+# INTERIM DATA (integration pipeline)
 interim_input_stems:
     type: filegdb
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/input_stems.gdb
@@ -125,30 +125,7 @@ geo_relation:
         - tops_all 
         - crowns_not_detected
 
-# interim extrapolation
-reference_oslo:
-    type: excel
-    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/extrapolation/reference_oslo.xlsx
-    sheet_names:
-        - metadata
-        - reference_data
-
-reference_municipality:
-    type: excel
-    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/extrapolation/reference_<<municipality>>.xlsx
-    sheet_names:
-        - metadata
-        - reference_data
-        - unique_species
-
-target_municipality:
-    type: excel
-    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/extrapolation/target_<<municipality>>.xlsx
-    sheet_names:
-        - metadata
-        - target_data
-
-# interim compute attributes
+# INTERIM DATA (input attribute pipeline)
 attr_input:
     type: filegdb
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/input_attribute_calculation.gdb
@@ -178,12 +155,55 @@ attr_cle:
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/attributes/attr_cle.gdb
     description: attributes computed in cle.py module 
 
-# processed
+# INPUT DATA (input to extrapolation pipeline)
+# output from i-Tree Eco, manually cleaned and processed
+# output from urban-tree-detection, manually cleaned and processed
+
+oslo_trees:
+  reference_trees:
+    type: csv, parquet
+    filepath_csv: ${TREKRONER}/data/oslo/general/CSV/oslo_registered_trees.csv
+    filepath_parquet: ${TREKRONER}/data/oslo/general/PARQUET/oslo_registered_trees.parquet
+    filepath_reference: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_reference_trees.csv
+    filepath_species_summary: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_reference_species_summary.csv
+    filepath_plot: ${TREKRONER}/data/oslo/general/CSV/extrapolation/img/oslo_species_summary_plot.png
+  target_trees: 
+    type: csv, parquet
+    filepath_csv: ${TREKRONER}/data/oslo/general/CSV/oslo_tree_crowns.csv
+    filepath_parquet: ${TREKRONER}/data/oslo/general/PARQUET/oslo_target_tree_crowns.parquet
+    filepath_target: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_target_tree_crowns.csv
+  lookup:
+    type: excel
+    filepath: ${TREKRONER}/data/lookup_tables/lookup_attribute_fields.xlsx
+    sheet_name: oslo_fields
+
+reference_oslo:
+    type: excel
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/extrapolation/reference_oslo.xlsx
+    sheet_names:
+        - metadata
+        - reference_data
+
+reference_municipality:
+    type: excel
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/extrapolation/reference_<<municipality>>.xlsx
+    sheet_names:
+        - metadata
+        - reference_data
+        - unique_species
+
+target_municipality:
+    type: excel
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/extrapolation/target_<<municipality>>.xlsx
+    sheet_names:
+        - metadata
+        - target_data
+
+# OUTPUT DATA (end result from integration, attribute pipelines, i-tree eco modelling, and extrapolation)
 extrapolated_values:
     type: csv
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/processed/<<municipality>>_extrapolated_values.csv
 
-# project deliverables
 tree_db:
     type: filegdb
     filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/general/<<municipality>>_traer/<<municipality>>_bytraer.gdb
