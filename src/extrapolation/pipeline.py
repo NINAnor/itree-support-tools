@@ -1,6 +1,7 @@
 # pipeline.py
 
 from nodes import prepare_data, score_model, train_model
+import numpy as np
 
 
 def pipeline(input_data):

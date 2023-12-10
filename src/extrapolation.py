@@ -1,13 +1,15 @@
 import logging
 
 import src.utils.decorators as dec
-from extrapolation.nodes import pipeline
+from extrapolation import clean_reference, clean_target
 from src.config.logger import setup_logging
 
 
 @dec.timer
 def main():
-    pipeline(reference_municipality="oslo")
+    """Run main script."""
+    df_ref = clean_reference.main()
+    df_target = clean_target.main()
 
     return
 
