@@ -38,6 +38,9 @@ cols_float:
 # services in the sample of municipally managed trees were retained for the Bayesian
 # network model (Cimburova and Barton 2020).
 oslo:
+  ref_id: "tree_id"
+  target_id: "id"
+  col_species: "taxon_genus"
   cols_ref:
     - "tree_id"
     - "itree_spec"
@@ -67,7 +70,6 @@ oslo:
     - "totben_cap_ca"
   cols_target:
     - "id"
-    - "OBJECTID"
     - "tree_id"
     - "itree_spec"
     - "teig_undervisning" # schools
@@ -117,7 +119,7 @@ rf_indiviual_es:
 
 rf_total_cap:
   reference_literature: Barton, D. 2023 
-  model_form: Totalverdi OT ~ randomForest(treslag + dbh + hoyde + kroneareal + luftsone)x,y,t
+  model_form: (Total Annual Benefits)x,y,t ~ randomForest(Species + DBH + Height + Crown Area + Pollution Zone)x,y,t
   transform: None
   model_options:
     test_size: 0.2

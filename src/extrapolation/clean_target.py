@@ -1,8 +1,10 @@
 # nodes.py
-import os
 import logging
+import os
+
 import numpy as np
 import pandas as pd
+
 from src.config.config import load_catalog, load_parameters
 
 
@@ -19,7 +21,6 @@ def logger_decorator(func):
 def load_target() -> pd.DataFrame:
     """Load target data."""
 
-    # set up logging
     parameters = load_parameters()
     municipality = parameters["municipality"]
 
@@ -123,9 +124,13 @@ def clean_target_rows(df_target, col_species):
 def fill_missing_species(df_target, df_summary, col_species):
     """Fill missing species in df_target using df_summary."""
 
+    logger = logging.getLogger(__name__)
+    logger.info(
+        "Fill missing species in df_target using species probability distribution."
+    )
     # load summary into df
     df_summary = pd.read_csv(df_summary)
-    print("Sum of Perc:", df_summary["Perc"].sum())
+    logger.info("Sum of Perc:", df_summary["Perc"].sum())
     # normalize Perc to probabilities (100% = 1)
     df_summary["Perc"] = df_summary["Perc"] / df_summary["Perc"].sum()
 
@@ -190,7 +195,7 @@ def main(col_id, col_species):
 
     # if file not exist then create it
     if not os.path.exists(target_path):
-        logger.info(f"Target data not found. Creating new target data.")
+        logger.info("Target data not found, creating it.")
         df_target = load_target()
 
         # CLEAN TARGET
@@ -204,7 +209,6 @@ def main(col_id, col_species):
             "filepath"
         ]
 
-        print(df_summary)
         df_target = fill_missing_species(df_target, df_summary, col_species)
         df_target = encode_species(df_target, col_species)
 
@@ -213,6 +217,11 @@ def main(col_id, col_species):
         export_target(df_target)
     else:
         df_target = pd.read_parquet(target_path)
+
+    # log info
+    logger.info(f"Target data shape: {df_target.shape}")
+    logger.info(f"Target data columns: {df_target.columns.tolist()}")
+    logger.info(f"Target data dtypes: {df_target.head()}")
 
     return df_target
 

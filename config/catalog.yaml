@@ -185,8 +185,8 @@ oslo_extrapolation:
         filepath_parquet: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_target_tree_crowns.parquet
     model:
         type: csv, img, pickle
-        filepath_json: ${TREKRONER}/data/oslo/general/CSV/extrapolation/model/oslo_model_params.json
-        filepath_pickle: ${TREKRONER}/data/oslo/general/CSV/extrapolation/model/oslo_model.pkl
+        filepath_json: ${TREKRONER}/data/oslo/general/CSV/extrapolation/model
+        filepath_pickle: ${TREKRONER}/data/oslo/general/CSV/extrapolation/model
         filepath_img: ${TREKRONER}/data/oslo/general/CSV/extrapolation/img
 
 

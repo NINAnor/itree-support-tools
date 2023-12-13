@@ -1,8 +1,10 @@
 # nodes.py
-import os
 import logging
+import os
+
 import numpy as np
 import pandas as pd
+
 from src.config.config import load_catalog, load_parameters
 
 
@@ -80,7 +82,6 @@ def clean_reference_cols(df_ref, df_lookup):
     # rename cols using lookup name:name_python
     col_name_mapping = dict(zip(df_lookup["name"], df_lookup["name_python"]))
     df_ref.rename(columns=col_name_mapping, inplace=True)
-    print(df_ref.head())
 
     # set int cols
     # if col in int_col set to int
@@ -117,7 +118,6 @@ def clean_reference_rows(df_ref, col_species):
     if "itree_spec" in df_ref.columns:
         df_ref = df_ref[df_ref["itree_spec"] != 0]
 
-    print(df_ref.head())
     # 2. fill rows with missing values
     # if dbh is  null and height is not null
     if "dbh" in df_ref.columns and "height_total_tree" in df_ref.columns:
@@ -125,7 +125,6 @@ def clean_reference_rows(df_ref, col_species):
         df_ref.loc[mask, "dbh"] = 4.04 * df_ref.loc[mask, "height_total_tree"] ** 0.82
         df_ref.loc[mask, "dbh_origin"] = "dbh = 4.04 * height^0.82"
 
-    print(df_ref["dbh"].head())
     # if dbh is  null and crown_diam is not null
     if "dbh" in df_ref.columns and "crown_diam" in df_ref.columns:
         mask = (df_ref["dbh"].isnull()) & (df_ref["crown_diam"].notnull())
@@ -133,7 +132,6 @@ def clean_reference_rows(df_ref, col_species):
             3.48**2.63
         )
         df_ref.loc[mask, "dbh_origin"] = "dbh = (crown_diam^2.63)/(3.48^2.63)"
-    print(df_ref["dbh"].head())
     # if height is  null and dbh is not null
     if "height_total_tree" in df_ref.columns and "dbh" in df_ref.columns:
         mask = (df_ref["height_total_tree"].isnull()) & (df_ref["dbh"].notnull())
@@ -143,7 +141,6 @@ def clean_reference_rows(df_ref, col_species):
         df_ref.loc[
             mask, "height_origin"
         ] = "height_total_tree = (dbh*1.22)/(4.04**1.22)"
-    print(df_ref["height_total_tree"].head())
 
     # totben_cap_ca = totben_cap/crown_area
     if "totben_cap" in df_ref.columns and "crown_area" in df_ref.columns:
@@ -151,7 +148,6 @@ def clean_reference_rows(df_ref, col_species):
 
     # Replace any potential NaN values resulting from the calculations
     df_ref.replace([np.inf, -np.inf], np.nan)
-    print(df_ref.head())
 
     # if rows < 0 in cols numeric then set to 0
     params = load_parameters()
@@ -261,13 +257,13 @@ def main(col_id, col_species):
     params = load_parameters()
     catalog = load_catalog()
     municipality = params["municipality"]
-    logger.info(f"Load reference and target data for municipality: {municipality}")
+    logger.info(f"Load reference data for municipality: {municipality}")
 
     # if file not exist then create it
     if not os.path.exists(
         catalog[f"{municipality}_extrapolation"]["reference"]["filepath_csv"]
     ):
-        logger.info(f"Reference data not found, creating it")
+        logger.info("Reference data not found, creating it")
         # load reference and lookup data
         df_ref = load_reference()
         df_lookup = load_lookup()
@@ -304,7 +300,7 @@ def main(col_id, col_species):
 
     # log info
     logger.info(f"Reference data shape: {df_ref.shape}")
-    logger.info(f"Reference data columns: {df_ref.columns}")
+    logger.info(f"Reference data columns: {df_ref.columns.tolist()}")
     logger.info(f"Reference data head: {df_ref.head()}")
     return df_ref
 
