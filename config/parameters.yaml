@@ -7,7 +7,26 @@ spatial_reference:
   oslo: "ETRS 1989 UTM Zone 32N"
   bodo: "ETRS 1989 UTM Zone 33N"
 
+cols_int:
+  - "itree_spec"
+  - "schools"
+  - "area_code"
+  - "district_code"
+  - "pollution_zone"
 
+cols_float:
+  - "dbh"
+  - "height_total_tree"
+  - "crown_area"
+  - "co2_storage_kg"
+  - "co2_seq_kg_yr"
+  - "runoff_m3"
+  - "pollution_no2"
+  - "pollution_pm25"
+  - "pollution_so2"
+  - "pollution_g"
+  - "totben_cap"
+  - "totben_cap_ca" # total benefits per crown area (Nkr/m2): totben_cap / crown_area
 
 # # NINA Project memo 397 (Barton, D. & Venter, Z., 2022) 
 # pollution zone, crown area and tree height are the 3 variables that mos explain variation in ecossytem services (Cimburova and Barton, 2020)
@@ -18,87 +37,68 @@ spatial_reference:
 # area) and ecosystem condition (air pollution) variables most strongly predicting ecosystem
 # services in the sample of municipally managed trees were retained for the Bayesian
 # network model (Cimburova and Barton 2020).
-
-cols_ref_oslo: 
-  - "tree_id"
-  - "itree_spec"
-  - "schools"
-  - "area_code"
-  - "district_code"
-  - "norwegian_name"
-  - "scientific_name"
-  - "species_origin"
-  - "dbh"
-  - "dbh_origin"
-  - "height_total_tree"
-  - "height_origin"
-  - "crown_area"
-  - "crown_diam"
-  - "crown_origin"
-  - "pollution_zone"
-  - "co2_storage_kg"
-  - "co2_seq_kg_yr"
-  - "runoff_m3"
-  - "pollution_no2"
-  - "pollution_pm25"
-  - "pollution_so2"
-  - "pollution_g"
-  - "totben_cap"
-  - "totben_cap_ca"
-
-cols_target_oslo:
-  - "dbh"
-  - "height_total_tree"
-  - "crown_area"
-  - "crown_diam"
-  - "co2_storage_kg"
-  - "co2_seq_kg_yr"
-  - "runoff_m3"
-  - "pollution_no2"
-  - "pollution_pm25"
-  - "pollution_so2"
-  - "pollution_g"
-  - "totben_cap"
-  - "totben_cap_ca"
-
-cols_ref:
-  - "tree_id"
-  - "itree_spec"
-  - "schools"
-  - "area_code"
-  - "district_code"
-  - "norwegian_name" # should be encoded 
-  - "scientific_name"
-  - "species_origin"
-  - "dbh"
-  - "dbh_origin"
-  - "height_total_tree"
-  - "height_origin"
-  - "crown_area"
-  - "crown_diam"
-  - "crown_origin"
-  - "pollution_zone" # is encoded (1 = low, 2 = medium, 3 = high)
-  - "co2_storage_kg"
-  - "co2_seq_kg_yr"
-  - "runoff_m3"
-  - "pollution_g"
-  - "totben_cap"
-  - "totben_cap_ca"
-
-cols_target:
-  - "dbh"
-  - "height_total_tree"
-  - "crown_area"
-  - "crown_diam"
-  - "co2_storage_kg"
-  - "co2_seq_kg_yr"
-  - "runoff_m3"
-  - "pollution_g"
-  - "totben_cap"
-  - "totben_cap_ca"
+oslo:
+  cols_ref:
+    - "tree_id"
+    - "itree_spec"
+    - "schools"
+    - "area_code"
+    - "district_code"
+    - "norwegian_name"
+    - "scientific_name"
+    - "taxon_genus" # genus
+    - "species_origin"
+    - "dbh"
+    - "dbh_origin"
+    - "height_total_tree"
+    - "height_origin"
+    - "crown_area"
+    - "crown_diam"
+    - "crown_origin"
+    - "pollution_zone"
+    - "co2_storage_kg"
+    - "co2_seq_kg_yr"
+    - "runoff_m3"
+    - "pollution_no2"
+    - "pollution_pm25"
+    - "pollution_so2"
+    - "pollution_g"
+    - "totben_cap"
+    - "totben_cap_ca"
+  cols_target:
+    - "id"
+    - "OBJECTID"
+    - "tree_id"
+    - "itree_spec"
+    - "teig_undervisning" # schools
+    - "delomradenummer" # area_code
+    - "grunnkretsnummer" # district_code
+    - "norwegian_name"
+    - "common_name"
+    - "taxon_genus" #genus
+    - "species_origin"
+    - "dbh"
+    - "dbh_origin"
+    - "height_total_tree"
+    - "height_origin"
+    - "crown_area"
+    - "crown_diam"
+    - "crown_origin"
+    - "pollution_zone"
+    - "co2_storage_kg"
+    - "co2_seq_kg_yr"
+    - "runoff_m3"
+    - "pollution_no2"
+    - "pollution_pm25"
+    - "pollution_so2"
+    - "pollution_g"
+    - "totben_cap"
+    - "totben_cap_ca"
 
 rf_indiviual_es:
     reference_literature: NINA Project memo 397 (Barton, D. & Venter, Z., 2022)
+    model_form: (individual_ES)x,y,t ~ randomForest(height_total_tree + crown_area + pollution_zone)x,y,t
+    transform: None
     model_options:
       test_size: 0.2
       random_state: 3
@@ -117,15 +117,18 @@ rf_indiviual_es:
 
 rf_total_cap:
   reference_literature: Barton, D. 2023 
+  model_form: Totalverdi OT ~ randomForest(treslag + dbh + hoyde + kroneareal + luftsone)x,y,t
+  transform: None
   model_options:
     test_size: 0.2
     random_state: 3
     response:
       - totben_cap # total benefits (Nkr/tree)
-      - totben_cap_ca # total benefits per crown area (Nkr/m2): totben_cap / crown_area
     predictors:
-      - norwegian_name # species
+      - taxon_genus # species
       - dbh # diameter at breast height
       - height_total_tree # tree height
       - crown_area
       - pollution_zone # zone 1, zone 3, zone 3
+    max_features: 1.0 # all predictors are considered at each split
+    n_estimators: 31 # number of trees in the forest

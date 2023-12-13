@@ -24,13 +24,13 @@ def load_reference() -> pd.DataFrame:
     municipality = parameters["municipality"]
 
     catalog = load_catalog()
-    ref_trees = catalog[f"{municipality}_trees"]["reference_trees"]
+    raw_trees = catalog[f"{municipality}_extrapolation"]["raw_trees"]
 
-    # load reference data from PARQUET if exist otherwise CSV
-    if os.path.exists(ref_trees["filepath_parquet"]):
-        df_ref = pd.read_parquet(ref_trees["filepath_parquet"])
+    # load raw data from PARQUET if exist otherwise CSV
+    if os.path.exists(raw_trees["filepath_parquet"]):
+        df_ref = pd.read_parquet(raw_trees["filepath_parquet"])
     else:
-        df_ref = pd.read_csv(ref_trees["filepath_csv"])
+        df_ref = pd.read_csv(raw_trees["filepath_csv"])
     return df_ref
 
 
@@ -42,7 +42,7 @@ def load_lookup() -> pd.DataFrame:
     municipality = parameters["municipality"]
 
     catalog = load_catalog()
-    lookup = catalog[f"{municipality}_trees"]["lookup"]
+    lookup = catalog[f"{municipality}_extrapolation"]["lookup"]
 
     # read lookup from excel, sheetname
     df_lookup = pd.read_excel(lookup["filepath"], sheet_name=lookup["sheet_name"])
@@ -81,14 +81,27 @@ def clean_reference_cols(df_ref, df_lookup):
     col_name_mapping = dict(zip(df_lookup["name"], df_lookup["name_python"]))
     df_ref.rename(columns=col_name_mapping, inplace=True)
     print(df_ref.head())
-    # from parameters get cols to keep
+
+    # set int cols
+    # if col in int_col set to int
     parameters = load_parameters()
-    if parameters["municipality"] == "oslo":
-        cols_to_keep = parameters["cols_ref_oslo"]
-    else:
-        cols_to_keep = parameters["cols_ref"]
+    cols_int = parameters["cols_int"]
+    for col in cols_int:
+        if col in df_ref.columns:
+            # convert str to flt
+            df_ref[col] = pd.to_numeric(df_ref[col], errors="coerce")
+            # convert flt to int if NA set to NA
+            df_ref[col] = df_ref[col].astype(np.int64, errors="ignore")
+
+    cols_float = parameters["cols_float"]
+    for col in cols_float:
+        if col in df_ref.columns:
+            # convert to numeric if possible otherwise set to NaN
+            df_ref[col] = pd.to_numeric(df_ref[col], errors="coerce")
 
     # create new columns, if not exist
+    municipality = parameters["municipality"]
+    cols_to_keep = parameters[municipality]["cols_ref"]
     for col in cols_to_keep:
         if col not in df_ref.columns:
             df_ref.loc[:, col] = None
@@ -96,23 +109,10 @@ def clean_reference_cols(df_ref, df_lookup):
     # remove cols not in cols_to_keep
     df_ref = df_ref[cols_to_keep]
 
-    # set cols to numeric if not already
-    if parameters["municipality"] == "oslo":
-        cols_numeric = parameters["cols_target_oslo"]
-    else:
-        cols_numeric = parameters["cols_target"]
-
-    for col in cols_numeric:
-        if col in df_ref.columns:
-            df_ref[col] = pd.to_numeric(df_ref[col], errors="coerce")
-
-    # round all numeric cols to 2 decimals
-    df_ref[cols_numeric] = df_ref[cols_numeric].round(2)
-
     return df_ref
 
 
-def clean_reference_rows(df_ref, df_lookup):
+def clean_reference_rows(df_ref, col_species):
     # 1. remove values with itree_spec = 0
     if "itree_spec" in df_ref.columns:
         df_ref = df_ref[df_ref["itree_spec"] != 0]
@@ -144,13 +144,38 @@ def clean_reference_rows(df_ref, df_lookup):
             mask, "height_origin"
         ] = "height_total_tree = (dbh*1.22)/(4.04**1.22)"
     print(df_ref["height_total_tree"].head())
+
+    # totben_cap_ca = totben_cap/crown_area
+    if "totben_cap" in df_ref.columns and "crown_area" in df_ref.columns:
+        df_ref["totben_cap_ca"] = df_ref["totben_cap"] / df_ref["crown_area"]
+
     # Replace any potential NaN values resulting from the calculations
     df_ref.replace([np.inf, -np.inf], np.nan)
     print(df_ref.head())
 
     # if rows < 0 in cols numeric then set to 0
-    cols_numeric = df_ref.select_dtypes(include=["float64", "int64"]).columns
-    df_ref[cols_numeric] = df_ref[cols_numeric].clip(lower=0)
+    params = load_parameters()
+    cols_float = params["cols_float"]
+    for col in cols_float:
+        df_ref.loc[:, col] = df_ref.loc[:, col].clip(lower=0)
+
+    # remove rows with missing values for
+    # col_species, dbh, height_total_tree, crown_area or pollution_zone
+    cols_to_check = [
+        col_species,
+        "dbh",
+        "height_total_tree",
+        "crown_area",
+        "pollution_zone",
+    ]
+    df_ref = df_ref.dropna(subset=cols_to_check)
+
+    # set values in col species to lower case
+    df_ref[col_species] = df_ref[col_species].str.lower()
+
+    # round numeric cols to 2 decimals
+    cols_numeric = df_ref.select_dtypes(include=[np.number]).columns.tolist()
+    df_ref[cols_numeric] = df_ref[cols_numeric].round(2)
 
     return df_ref
 
@@ -199,15 +224,19 @@ def encode_and_rename(df, column, prefix):
     """Helper function to encode and rename a dataframe column."""
     df[column] = df[column].astype("category")
     encoded_df = pd.get_dummies(df[column], prefix=prefix)
-    encoded_cols = [col.replace(prefix, "").lower() for col in encoded_df.columns]
-    encoded_df.columns = encoded_cols
+
+    # ensure all spaces in col names are replaced with "_"
+    encoded_df.columns = encoded_df.columns.str.replace(" ", "_")
+
+    # set all encoded_cols to int
+    encoded_df = encoded_df.astype(np.int64)
     return pd.concat([df, encoded_df], axis=1)
 
 
-def encode_species(df_target):
-    """Encode norwegian_name and species using one-hot encoding."""
-    df_target = encode_and_rename(df_target, "norwegian_name", "treslag_")
-    return df_target
+def encode_species(df, col_species):
+    """Encode species using one-hot encoding."""
+    df = encode_and_rename(df, col_species, "SP")
+    return df
 
 
 def export_reference(df_ref, df_species_summary):
@@ -216,15 +245,17 @@ def export_reference(df_ref, df_species_summary):
     municipality = parameters["municipality"]
 
     catalog = load_catalog()
-    ref_trees = catalog[f"{municipality}_trees"]["reference_trees"]
-    df_ref.to_csv(ref_trees["filepath_reference"], index=False, encoding="utf-8")
-    df_species_summary.to_csv(
-        ref_trees["filepath_species_summary"], index=False, encoding="utf-8"
-    )
+    ref_trees = catalog[f"{municipality}_extrapolation"]["reference"]
+    df_ref.to_csv(ref_trees["filepath_csv"], index=False, encoding="utf-8")
+
+    summary_path = catalog[f"{municipality}_extrapolation"]["species_summary"][
+        "filepath"
+    ]
+    df_species_summary.to_csv(summary_path, index=False, encoding="utf-8")
     return
 
 
-def main():
+def main(col_id, col_species):
     # set up logging
     logger = logging.getLogger(__name__)
     params = load_parameters()
@@ -234,7 +265,7 @@ def main():
 
     # if file not exist then create it
     if not os.path.exists(
-        catalog[f"{municipality}_trees"]["reference_trees"]["filepath_reference"]
+        catalog[f"{municipality}_extrapolation"]["reference"]["filepath_csv"]
     ):
         logger.info(f"Reference data not found, creating it")
         # load reference and lookup data
@@ -244,31 +275,31 @@ def main():
         # CLEAN REFERENCE
         # ---------------
         df_ref = clean_reference_cols(df_ref, df_lookup)
-        df_ref = clean_reference_rows(df_ref, df_lookup)
+        df_ref = clean_reference_rows(df_ref, col_species)
 
         # ENCODE SPECIES
         # --------------
-        df_species_summary = calc_summary(
-            df_ref, "norwegian_name", classify_other=False
-        )
-        filename = catalog[f"{municipality}_trees"]["reference_trees"]["filepath_plot"]
+        df_species_summary = calc_summary(df_ref, col_species, classify_other=False)
+        filename = catalog[f"{municipality}_extrapolation"]["species_summary"][
+            "img_path"
+        ]
         plot_summary(
             df_species_summary,
-            x="norwegian_name",
+            x=col_species,
             y="Perc",
             title="Treslagsfordeling",
             xlabel="Treslag",
             ylabel="Sannsynlighet (%)",
             filename=filename,
         )
-        df_ref = encode_species(df_ref)
+        df_ref = encode_species(df_ref, col_species)
 
         # EXPORT REFERENCE
         # ----------------
         export_reference(df_ref, df_species_summary)
     else:
         df_ref = pd.read_csv(
-            catalog[f"{municipality}_trees"]["reference_trees"]["filepath_reference"]
+            catalog[f"{municipality}_extrapolation"]["reference"]["filepath_csv"]
         )
 
     # log info
@@ -279,4 +310,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(col_id="tree_id", col_species="taxon_genus")

@@ -159,23 +159,37 @@ attr_cle:
 # output from i-Tree Eco, manually cleaned and processed
 # output from urban-tree-detection, manually cleaned and processed
 
-oslo_trees:
-  reference_trees:
-    type: csv, parquet
-    filepath_csv: ${TREKRONER}/data/oslo/general/CSV/oslo_registered_trees.csv
-    filepath_parquet: ${TREKRONER}/data/oslo/general/PARQUET/oslo_registered_trees.parquet
-    filepath_reference: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_reference_trees.csv
-    filepath_species_summary: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_reference_species_summary.csv
-    filepath_plot: ${TREKRONER}/data/oslo/general/CSV/extrapolation/img/oslo_species_summary_plot.png
-  target_trees: 
-    type: csv, parquet
-    filepath_csv: ${TREKRONER}/data/oslo/general/CSV/oslo_tree_crowns.csv
-    filepath_parquet: ${TREKRONER}/data/oslo/general/PARQUET/oslo_target_tree_crowns.parquet
-    filepath_target: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_target_tree_crowns.csv
-  lookup:
-    type: excel
-    filepath: ${TREKRONER}/data/lookup_tables/lookup_attribute_fields.xlsx
-    sheet_name: oslo_fields
+oslo_extrapolation:
+    raw_trees: 
+        type: csv, parquet
+        filepath_csv: ${TREKRONER}/data/oslo/general/CSV/oslo_registered_trees.csv
+        filepath_parquet: ${TREKRONER}/data/oslo/general/PARQUET/oslo_registered_trees.parquet
+    raw_crowns:
+        type: csv, parquet
+        filepath_csv: ${TREKRONER}/data/oslo/general/CSV/oslo_tree_crowns.csv
+        filepath_parquet: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_target_tree_crowns.parquet
+    lookup:
+        type: excel
+        filepath: ${TREKRONER}/data/lookup_tables/lookup_attribute_fields.xlsx
+        sheet_name: oslo_fields
+    species_summary:
+        type: csv, img   
+        filepath: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_reference_species_summary.csv
+        img_path: ${TREKRONER}/data/oslo/general/CSV/extrapolation/img/oslo_species_summary_plot.png
+    reference:
+        type: csv
+        filepath_csv: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_reference_trees.csv
+    target: 
+        type: csv, parquet
+        filepath_csv: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_target_tree_crowns.csv
+        filepath_parquet: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_target_tree_crowns.parquet
+    model:
+        type: csv, img, pickle
+        filepath_json: ${TREKRONER}/data/oslo/general/CSV/extrapolation/model/oslo_model_params.json
+        filepath_pickle: ${TREKRONER}/data/oslo/general/CSV/extrapolation/model/oslo_model.pkl
+        filepath_img: ${TREKRONER}/data/oslo/general/CSV/extrapolation/img
+
+
 
 reference_oslo:
     type: excel

@@ -5,7 +5,7 @@ import numpy as np
 
 
 def pipeline(input_data):
-    # Prepare the data
+    # load prepared data
     prepared_data = prepare_data(input_data)
 
     # Train the model
