@@ -188,6 +188,17 @@ oslo_extrapolation:
         filepath_json: ${TREKRONER}/data/oslo/general/CSV/extrapolation/model
         filepath_pickle: ${TREKRONER}/data/oslo/general/CSV/extrapolation/model
         filepath_img: ${TREKRONER}/data/oslo/general/CSV/extrapolation/img
+    output:
+        filepath_csv: ${TREKRONER}/data/oslo/general/CSV/extrapolation/output
+        filepath_geojson: ${TREKRONER}/data/oslo/general/CSV/extrapolation/output
+
+
+
+
+
+
+
+
 
 
 

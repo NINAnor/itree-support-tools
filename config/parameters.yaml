@@ -97,9 +97,27 @@ oslo:
     - "totben_cap"
     - "totben_cap_ca"
 
-rf_indiviual_es:
+rf_individual_es:
     reference_literature: NINA Project memo 397 (Barton, D. & Venter, Z., 2022)
-    model_form: (individual_ES)x,y,t ~ randomForest(height_total_tree + crown_area + pollution_zone)x,y,t
+    model_form: (individual_ES)x,y,t ~ randomForest(Height + Crown Area + Pollution Zone)x,y,t
+    transform: None
+    model_options:
+      test_size: 0.2
+      random_state: 3
+      response:
+        - runoff_m3 
+        - pollution_no2 
+        - pollution_pm25 
+        - pollution_so2 
+        - pollution_g # sum(NO2, PM25 and SO2)
+      predictors: # species
+        - height_total_tree # tree height
+        - crown_area
+        - pollution_zone # zone 1, zone 3, zone 3
+
+rf_carbon_es:
+    reference_literature: NINA Project memo 397 (Barton, D. & Venter, Z., 2022)
+    model_form: (individual_ES)x,y,t ~ randomForest(DBH + Height + Crown Area + Pollution Zone)x,y,t
     transform: None
     model_options:
       test_size: 0.2
@@ -107,12 +125,8 @@ rf_indiviual_es:
       response:
         - co2_storage_kg 
         - co2_seq_kg_yr 
-        - runoff_m3 
-        - pollution_no2 
-        - pollution_pm25 
-        - pollution_so2 
-        - pollution_g # sum(NO2, PM25 and SO2)
-      predictors:
+      predictors: # species
+        - dbh
         - height_total_tree # tree height
         - crown_area
         - pollution_zone # zone 1, zone 3, zone 3

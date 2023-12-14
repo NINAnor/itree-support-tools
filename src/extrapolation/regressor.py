@@ -20,7 +20,7 @@ def get_file_prefix(municipality, response):
     response_str = response_str.replace("[", "")
     response_str = response_str.replace("]", "")
 
-    prefix = f"{municipality}_{response_str}_"
+    prefix = f"{municipality}_{response_str}"
     return prefix
 
 
@@ -99,14 +99,13 @@ def _update_model_params(new_params, file_prefix):
         json.dump(existing_params, f)
 
 
-def _plot_model_performance(y_test, y_pred, dict, file_prefix):
+def _plot_model_performance(response, y_test, y_pred, dict, file_prefix):
     import matplotlib.pyplot as plt
     import seaborn as sns
 
     logger = logging.getLogger(__name__)
     logger.info("Plot model performance...")
 
-    response = dict["response"]
     # list to string
     response_str = " ".join(response)
     # remove ' ' from filename
@@ -148,7 +147,7 @@ def _plot_model_performance(y_test, y_pred, dict, file_prefix):
     plt.savefig(filepath, bbox_inches="tight")
 
 
-def split_data(data, model_params) -> Tuple:
+def split_data(data, model_params, response, predictors) -> Tuple:
     """Splits data into features and targets training and test sets.
 
     Args:
@@ -160,12 +159,10 @@ def split_data(data, model_params) -> Tuple:
     logger = logging.getLogger(__name__)
     logger.info("Split data into training and test sets...")
 
-    predictors = model_params["predictors"]
+    # get encoded cols if norwegian_name or taxon_genus in predictors
     predictors = _get_predictors(
         df_ref=data, predictors=predictors, encoding_marker="SP_"
     )
-
-    response = model_params["response"]
 
     # drop rows with missing values in predictors and response
     cols = [*response, *predictors]
@@ -189,7 +186,7 @@ def split_data(data, model_params) -> Tuple:
     logger.info(f"Y_train shape: {y_train.shape}")
     logger.info(f"y_test shape: {y_test.shape}")
 
-    return response, predictors, X_train, X_test, y_train, y_test
+    return predictors, X_train, X_test, y_train, y_test
 
 
 def load_model(filepath):
@@ -237,13 +234,24 @@ def tune_rf(X_train, y_train, model_params, file_prefix):
     }
 
     # Perform grid search
+    # use all processors available (n_jobs=-1)
     grid_search = GridSearchCV(
-        rfmodel, param_grid, cv=10, scoring="neg_mean_squared_error"
+        rfmodel, param_grid, cv=10, scoring="r2", n_jobs=-1, verbose=1
     )
     grid_search.fit(X_train, y_train)
 
     # Get the best model
     best_rfmodel = grid_search.best_estimator_
+
+    # Get the R2 score of the best model
+    r2_score_best_model = best_rfmodel.score(X_train, y_train)
+    logger.info(f"R2 score of the best model: {r2_score_best_model}")
+
+    # Get the average R2 score across all folds of the cross-validation
+    avg_r2_score = grid_search.cv_results_["mean_test_score"][grid_search.best_index_]
+    logger.info(
+        f"Average R2 score across all folds of the cross-validation: {avg_r2_score}"
+    )
 
     # Get the best parameters
     best_params = grid_search.best_params_
@@ -287,7 +295,7 @@ def get_model(X_train, y_train, model_params, file_prefix):
     return rfmodel
 
 
-def evaluate_model(model, X_test, y_test, model_params, file_prefix):
+def evaluate_model(model, response, X_test, y_test, model_params, file_prefix):
     """Evaluate model performance on test data.
     and store the results in a dictionary.
 
@@ -316,7 +324,7 @@ def evaluate_model(model, X_test, y_test, model_params, file_prefix):
 
     dict = {
         "model_name": model_params["model_form"],
-        "response": model_params["model_options"]["response"],
+        "response": response,
         "mae": mae,
         "mse": mse,
         "rmse": rmse,
@@ -328,13 +336,13 @@ def evaluate_model(model, X_test, y_test, model_params, file_prefix):
         \n{dict['model_name']}",
     )
 
-    _plot_model_performance(y_test, y_pred, dict, file_prefix)
+    _plot_model_performance(response, y_test, y_pred, dict, file_prefix)
     _update_model_params(dict, file_prefix)
 
     return dict
 
 
-def predict(df_target, target_id, regressor, response, predictors):
+def predict(df_target, target_id, regressor, response, predictors, file_prefix):
     """Extrapolate (predict) the values to the target dataset.
 
     Args:
@@ -349,10 +357,15 @@ def predict(df_target, target_id, regressor, response, predictors):
     logger.info("Predicting values to target dataset...")
 
     # delete row if predictors contain missing values
-    df = df_target.dropna(subset=predictors)
+    # df = df_target.dropna(subset=predictors)
+    # fill missing values with median
+    logger.info(f"Median imputation of missing values in continuous {predictors}...")
+    df = df_target.copy()
+    df[predictors] = df[predictors].fillna(df[predictors].median())
+
     X_target = df[predictors]
 
-    # predict values
+    # predict
     y_target = regressor.predict(X_target)
     y_target = np.round(y_target, 2)
     y_target = pd.DataFrame(y_target, columns=response)
@@ -364,7 +377,20 @@ def predict(df_target, target_id, regressor, response, predictors):
     # sort by ID
     df_result = df_result.sort_values(by=[target_id])
     df_result[response] = y_target[response]
-    print(df_result.head())
 
-    # ct.export_target(df_target)
+    _export_results(df_result, file_prefix)
     return df_target
+
+
+def _export_results(df_target, file_prefix):
+    logger = logging.getLogger(__name__)
+    logger.info("Exporting results...")
+    # export target data to csv
+    municipality = load_parameters()["municipality"]
+    catalog = load_catalog()
+
+    path = catalog[f"{municipality}_extrapolation"]["output"]["filepath_csv"]
+    file_name = f"{file_prefix}_predicted.csv"
+    filepath = os.path.join(path, file_name)
+    df_target.to_csv(filepath, index=False, encoding="utf-8")
+    return logger.info(f"Exported results to {filepath}")
