@@ -2,7 +2,7 @@ import logging
 import os
 
 import src.utils.decorators as dec
-from extrapolation import clean_reference, clean_target, regressor
+from extrapolation import clean_reference, clean_results, clean_target, regressor
 from src.config.config import load_catalog, load_parameters
 from src.config.logger import setup_logging
 
@@ -245,12 +245,30 @@ def carbon_es(df_ref, df_target):
         )
 
 
+def export_results():
+    municipality = load_parameters()["municipality"]
+    target_id = load_parameters()[municipality]["target_id"]
+    col_species = load_parameters()[municipality]["col_species"]
+    clean_results.merge_csv(col_id=target_id, col_species=col_species)
+    clean_results.merge_geojson(col_id=target_id)
+
+
+def summary_stat():
+    municipality = load_parameters()["municipality"]
+    target_id = load_parameters()[municipality]["target_id"]
+    col_species = load_parameters()[municipality]["col_species"]
+    clean_results.create_summary(col_species=col_species)
+    return
+
+
 if __name__ == "__main__":
     # set up logging
     setup_logging()
     logger = logging.getLogger(__name__)
 
-    df_ref, df_target = prepare_data()
-    totben_cap(df_ref, df_target)
-    individual_es(df_ref, df_target)
-    carbon_es(df_ref, df_target)
+    # df_ref, df_target = prepare_data()
+    # totben_cap(df_ref, df_target)
+    # individual_es(df_ref, df_target)
+    # carbon_es(df_ref, df_target)
+    # export_results()
+    # summary_stat()

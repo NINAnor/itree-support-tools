@@ -130,7 +130,7 @@ def fill_missing_species(df_target, df_summary, col_species):
     )
     # load summary into df
     df_summary = pd.read_csv(df_summary)
-    logger.info("Sum of Perc:", df_summary["Perc"].sum())
+    # logger.info("Sum of Perc:", df_summary["Perc"].sum())
     # normalize Perc to probabilities (100% = 1)
     df_summary["Perc"] = df_summary["Perc"] / df_summary["Perc"].sum()
 

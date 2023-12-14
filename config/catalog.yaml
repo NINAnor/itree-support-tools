@@ -168,6 +168,7 @@ oslo_extrapolation:
         type: csv, parquet
         filepath_csv: ${TREKRONER}/data/oslo/general/CSV/oslo_tree_crowns.csv
         filepath_parquet: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_target_tree_crowns.parquet
+        filepath_geojson: ${TREKRONER}/data/oslo/general/GEOJSON/oslo_tree_crowns.geojson
     lookup:
         type: excel
         filepath: ${TREKRONER}/data/lookup_tables/lookup_attribute_fields.xlsx
@@ -191,7 +192,7 @@ oslo_extrapolation:
     output:
         filepath_csv: ${TREKRONER}/data/oslo/general/CSV/extrapolation/output
         filepath_geojson: ${TREKRONER}/data/oslo/general/CSV/extrapolation/output
-
+        
 
 
 

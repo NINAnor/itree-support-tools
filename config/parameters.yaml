@@ -146,5 +146,3 @@ rf_total_cap:
       - height_total_tree # tree height
       - crown_area
       - pollution_zone # zone 1, zone 3, zone 3
-    max_features: 1.0 # all predictors are considered at each split
-    n_estimators: 31 # number of trees in the forest
