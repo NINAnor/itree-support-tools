@@ -264,6 +264,21 @@ def tune_rf(X_train, y_train, model_params, file_prefix):
     return best_rfmodel
 
 
+def linear_regression(X_train, y_train, file_prefix):
+    logger = logging.getLogger(__name__)
+    logger.info("Tuning random forest parameters...")
+
+    from sklearn.linear_model import LinearRegression
+
+    # Create and fit the regression model
+    linear_model = LinearRegression()
+    linear_model.fit(X_train, y_train)
+
+    _export_model(linear_model, file_prefix)
+
+    return linear_model
+
+
 def get_model(X_train, y_train, model_params, file_prefix):
     """
     Train model using the tuned parameters stored in the model_params.json file.
@@ -322,14 +337,46 @@ def evaluate_model(model, response, X_test, y_test, model_params, file_prefix):
     rmse = round(np.sqrt(mean_squared_error(y_test, y_pred)), 2)
     r2 = round(r2_score(y_test, y_pred), 2)
 
-    dict = {
-        "model_name": model_params["model_form"],
-        "response": response,
-        "mae": mae,
-        "mse": mse,
-        "rmse": rmse,
-        "r2": r2,
-    }
+    if "kristiansand" in file_prefix:
+        # Get equation of the model
+        X_test = pd.DataFrame(X_test)
+
+        b0 = round(model.intercept_, 1)
+        b1 = round(model.coef_[0], 1)
+        b2 = round(model.coef_[1], 1)
+        b3 = round(model.coef_[2], 1)
+
+        x1 = X_test.columns[0]
+        x2 = X_test.columns[1]
+        x3 = X_test.columns[2]
+        model_equation = f"y = {b0} + {b1}*{x1} + {b2}*{x2} + {b3}*{x3}"
+        if len(model.coef_) > 3:
+            b4 = round(model.coef_[3], 1)
+
+            x4 = X_test.columns[3]
+            model_equation = (
+                f"y = {b0} + {b1}*{x1} + {b2}*{x2} + {b3}*{x3} + {b4}*{x4} + ..."
+            )
+        logger.info(f"Model equation: {model_equation}")
+
+        dict = {
+            "model_name": model_equation,
+            "response": response,
+            "mae": mae,
+            "mse": mse,
+            "rmse": rmse,
+            "r2": r2,
+        }
+    else:
+        dict = {
+            "model_name": model_params["model_form"],
+            "response": response,
+            "mae": mae,
+            "mse": mse,
+            "rmse": rmse,
+            "r2": r2,
+        }
+
     logger.info(
         f"R2: {dict['r2']} \tRMSE: {dict['rmse']:.2f}\
         \tMSE:{dict['mse']} \tMAE: {dict['mae']:.2f}\
@@ -337,7 +384,10 @@ def evaluate_model(model, response, X_test, y_test, model_params, file_prefix):
     )
 
     _plot_model_performance(response, y_test, y_pred, dict, file_prefix)
-    _update_model_params(dict, file_prefix)
+
+    # if file prefix contains "kristiansand"
+    if not "kristiansand" in file_prefix:
+        _export_model_params(dict, file_prefix)
 
     return dict
 

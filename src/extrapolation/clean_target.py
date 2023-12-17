@@ -31,7 +31,7 @@ def load_target() -> pd.DataFrame:
     if os.path.exists(raw_crowns["filepath_parquet"]):
         df_target = pd.read_parquet(raw_crowns["filepath_parquet"])
     else:
-        df_target = pd.read_csv(raw_crowns["filepath_csv"])
+        df_target = pd.read_csv(raw_crowns["filepath_csv"], low_memory=False)
     return df_target
 
 
@@ -40,7 +40,7 @@ def clean_target_cols(df_target, col_id):
 
     # convert all colnames to lowercase except col_id
     df_target.columns = [
-        col.lower() if col != "col ID" else col for col in df_target.columns
+        col.lower() if col != "ID" else col for col in df_target.columns
     ]
 
     # set int cols
@@ -116,6 +116,7 @@ def clean_target_rows(df_target, col_species):
 
     # round numeric cols to 2 decimals
     cols_numeric = df_target.select_dtypes(include=[np.number]).columns.tolist()
+    print("COLS NUMERIC: ", cols_numeric)
     df_target[cols_numeric] = df_target[cols_numeric].round(2)
 
     return df_target

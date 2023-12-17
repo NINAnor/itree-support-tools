@@ -20,9 +20,9 @@ def merge_csv(col_id, col_species):
         "co2_storage_kg",
         "co2_seq_kg_yr",
         "runoff_m3",
-        "pollution_no2",
-        "pollution_pm25",
-        "pollution_so2",
+        # "pollution_no2",
+        # "pollution_pm25",
+        # "pollution_so2",
         "pollution_g",
     ]
 
@@ -41,8 +41,6 @@ def merge_csv(col_id, col_species):
                 [
                     col_id,
                     col_species,
-                    "itree_spec",
-                    "teig_undervisning",
                     "species_origin",
                     "delomradenummer",
                     "grunnkretsnummer",
@@ -63,20 +61,30 @@ def merge_csv(col_id, col_species):
 
         # update dict
         dfs[col] = df
-        print(df.head())
+        print(df.shape)
+        print(df.head(2))
 
-    # merge all dfs based on id
-    # merge all dfs based on id
+    # merge all dfs based on id (13504, 15 ) + (13504, 2) +  (13504, 2) + (13504, 2) + (13504, 2) + > (13504, 23)
+
     df_merged = dfs["totben_cap"]
+    # if duplicates in col_id print ERROR
+    if df_merged[col_id].duplicated().any():
+        print("ERROR: duplicates in col_id")
+        print(df_merged[df_merged[col_id].duplicated()])
+        return
+
     for col, df in dfs.items():
         if col != "totben_cap":
+            print(f"Merge {col} with shape {df.shape} to df_merged")
             df_merged = df_merged.merge(df, on=col_id)
+
+    print(df_merged.shape)
 
     # calculate
     # totben_cap_ca = totben_cap / crown_area
     df_merged["totben_cap_ca"] = df_merged["totben_cap"] / df_merged["crown_area"]
     df_merged = df_merged.round(2)
-    print(df_merged.head())
+    print(df_merged.head(2))
 
     # export to csv
     df_merged.to_csv(
@@ -135,9 +143,9 @@ def create_summary(col_species):
         "co2_storage_kg",
         "co2_seq_kg_yr",
         "runoff_m3",
-        "pollution_no2",
-        "pollution_pm25",
-        "pollution_so2",
+        # "pollution_no2",
+        # "pollution_pm25",
+        # "pollution_so2",
         "pollution_g",
     ]
 

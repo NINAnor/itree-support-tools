@@ -2,7 +2,7 @@ import logging
 import os
 
 import src.utils.decorators as dec
-from extrapolation import clean_reference, clean_results, clean_target, regressor
+from src.extrapolation import clean_reference, clean_results, clean_target, regressor
 from src.config.config import load_catalog, load_parameters
 from src.config.logger import setup_logging
 
@@ -14,14 +14,28 @@ def prepare_data():
     # fill missing values for dbh based on height or crown_diam
     # encode categorical variables
     municipality = load_parameters()["municipality"]
-    params = load_parameters()
-    ref_id = params[municipality]["ref_id"]
-    target_id = params[municipality]["target_id"]
-    col_species = params[municipality]["col_species"]
 
-    df_ref = clean_reference.main(col_id=ref_id, col_species=col_species)
-    df_target = clean_target.main(col_id=target_id, col_species=col_species)
-    return df_ref, df_target
+    if municipality == "baerum":
+        params = load_parameters()
+        ref_id = params["oslo"]["ref_id"]
+        target_id = params["baerum"]["target_id"]
+        col_species = params["baerum"]["col_species"]
+
+        df_ref = clean_reference.main(col_id=ref_id, col_species=col_species)
+        df_target = clean_target.main(col_id=target_id, col_species=col_species)
+
+        return df_ref, df_target
+
+    else:
+        params = load_parameters()
+        ref_id = params[municipality]["ref_id"]
+        target_id = params[municipality]["target_id"]
+        col_species = params[municipality]["col_species"]
+
+        df_ref = clean_reference.main(col_id=ref_id, col_species=col_species)
+        df_target = clean_target.main(col_id=target_id, col_species=col_species)
+
+        return df_ref, df_target
 
 
 @dec.timer
@@ -30,13 +44,15 @@ def totben_cap(df_ref, df_target):
     Predict the total annual benefits (Nkr/år) of trees
     in the municipalities building zone.
     """
-
     municipality = load_parameters()["municipality"]
     catalog = load_catalog()
 
     # load model parameters
     model_params = load_parameters()["rf_total_cap"]
     target_id = load_parameters()[municipality]["target_id"]
+
+    if municipality == "baerum":
+        municipality = "oslo"
 
     response = model_params["model_options"]["response"]
     predictors = model_params["model_options"]["predictors"]
@@ -62,19 +78,24 @@ def totben_cap(df_ref, df_target):
     # -----------
     # if model exist then load it, else train new model
     if os.path.exists(model_filepath):
-        rfmodel = regressor.load_model(model_filepath)
+        regression_model = regressor.load_model(model_filepath)
     else:
-        rfmodel = regressor.tune_rf(
-            X_train,
-            y_train,
-            model_params=model_params["model_options"],
-            file_prefix=file_prefix,
-        )
+        if municipality == "kristiansand":
+            regression_model = regressor.linear_regression(
+                X_train, y_train, file_prefix
+            )
+        else:
+            regression_model = regressor.tune_rf(
+                X_train,
+                y_train,
+                model_params=model_params["model_options"],
+                file_prefix=file_prefix,
+            )
 
     # Evaluate model
     # --------------
     regressor.evaluate_model(
-        rfmodel,
+        regression_model,
         response,
         X_test,
         y_test,
@@ -87,7 +108,7 @@ def totben_cap(df_ref, df_target):
     regressor.predict(
         df_target=df_target,
         target_id=target_id,
-        regressor=rfmodel,
+        regressor=regression_model,
         response=response,
         predictors=predictors,
         file_prefix=file_prefix,
@@ -107,10 +128,21 @@ def individual_es(df_ref, df_target):
     model_params = load_parameters()["rf_individual_es"]
     target_id = load_parameters()[municipality]["target_id"]
 
+    if municipality == "baerum":
+        municipality = "oslo"
+
     predictors = model_params["model_options"]["predictors"]
     lst_response_variables = model_params["model_options"]["response"]
     if isinstance(lst_response_variables, str):
         lst_response_variables = [lst_response_variables]
+
+    if municipality == "bodo":
+        # drop "pollution_no2", "pollution_pm25", "pollution_so2"
+        lst_response_variables = [
+            x
+            for x in lst_response_variables
+            if x not in ["pollution_no2", "pollution_pm25", "pollution_so2"]
+        ]
 
     # loop over response variables, model and predict
     for y_var in lst_response_variables:
@@ -138,19 +170,24 @@ def individual_es(df_ref, df_target):
         # -----------
         # if model exist then load it, else train new model
         if os.path.exists(model_filepath):
-            rfmodel = regressor.load_model(model_filepath)
+            regression_model = regressor.load_model(model_filepath)
         else:
-            rfmodel = regressor.tune_rf(
-                X_train,
-                y_train,
-                model_params=model_params["model_options"],
-                file_prefix=file_prefix,
-            )
+            if municipality == "kristiansand":
+                regression_model = regressor.linear_regression(
+                    X_train, y_train, file_prefix
+                )
+            else:
+                regression_model = regressor.tune_rf(
+                    X_train,
+                    y_train,
+                    model_params=model_params["model_options"],
+                    file_prefix=file_prefix,
+                )
 
         # Evaluate model
         # --------------
         regressor.evaluate_model(
-            rfmodel,
+            regression_model,
             y_var,
             X_test,
             y_test,
@@ -163,7 +200,7 @@ def individual_es(df_ref, df_target):
         regressor.predict(
             df_target=df_target,
             target_id=target_id,
-            regressor=rfmodel,
+            regressor=regression_model,
             response=y_var,
             predictors=predictors,
             file_prefix=file_prefix,
@@ -182,6 +219,9 @@ def carbon_es(df_ref, df_target):
     model_params = load_parameters()["rf_carbon_es"]
     target_id = load_parameters()[municipality]["target_id"]
 
+    if municipality == "baerum":
+        municipality = "oslo"
+
     predictors = model_params["model_options"]["predictors"]
     lst_response_variables = model_params["model_options"]["response"]
     if isinstance(lst_response_variables, str):
@@ -213,19 +253,24 @@ def carbon_es(df_ref, df_target):
         # -----------
         # if model exist then load it, else train new model
         if os.path.exists(model_filepath):
-            rfmodel = regressor.load_model(model_filepath)
+            regression_model = regressor.load_model(model_filepath)
         else:
-            rfmodel = regressor.tune_rf(
-                X_train,
-                y_train,
-                model_params=model_params["model_options"],
-                file_prefix=file_prefix,
-            )
+            if municipality == "kristiansand":
+                regression_model = regressor.linear_regression(
+                    X_train, y_train, file_prefix
+                )
+            else:
+                regression_model = regressor.tune_rf(
+                    X_train,
+                    y_train,
+                    model_params=model_params["model_options"],
+                    file_prefix=file_prefix,
+                )
 
         # Evaluate model
         # --------------
         regressor.evaluate_model(
-            rfmodel,
+            regression_model,
             y_var,
             X_test,
             y_test,
@@ -238,7 +283,7 @@ def carbon_es(df_ref, df_target):
         regressor.predict(
             df_target=df_target,
             target_id=target_id,
-            regressor=rfmodel,
+            regressor=regression_model,
             response=y_var,
             predictors=predictors,
             file_prefix=file_prefix,
@@ -250,7 +295,7 @@ def export_results():
     target_id = load_parameters()[municipality]["target_id"]
     col_species = load_parameters()[municipality]["col_species"]
     clean_results.merge_csv(col_id=target_id, col_species=col_species)
-    clean_results.merge_geojson(col_id=target_id)
+    # clean_results.merge_geojson(col_id=target_id)
 
 
 def summary_stat():
@@ -266,9 +311,9 @@ if __name__ == "__main__":
     setup_logging()
     logger = logging.getLogger(__name__)
 
-    # df_ref, df_target = prepare_data()
-    # totben_cap(df_ref, df_target)
-    # individual_es(df_ref, df_target)
-    # carbon_es(df_ref, df_target)
-    # export_results()
-    # summary_stat()
+    df_ref, df_target = prepare_data()
+    totben_cap(df_ref, df_target)
+    individual_es(df_ref, df_target)
+    carbon_es(df_ref, df_target)
+    export_results()
+    summary_stat()

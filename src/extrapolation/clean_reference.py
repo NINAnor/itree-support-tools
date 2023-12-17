@@ -67,21 +67,24 @@ def clean_reference_cols(df_ref, df_lookup):
         _description_
     """
 
+    municipality = load_parameters()["municipality"]
+
     # 1. CLEAN COLUMNS
     # ----------------
-    if "name_python" in df_lookup.columns:
-        df_lookup = df_lookup.dropna(subset=["name_python"])
-        df_lookup = df_lookup[df_lookup["name_python"] != ""]
+    if municipality == "oslo":
+        if "name_python" in df_lookup.columns:
+            df_lookup = df_lookup.dropna(subset=["name_python"])
+            df_lookup = df_lookup[df_lookup["name_python"] != ""]
 
-    lookup_cols = df_lookup["name"].tolist()
-    lookup_cols = [col for col in df_ref.columns if col in lookup_cols]
+        lookup_cols = df_lookup["name"].tolist()
+        lookup_cols = [col for col in df_ref.columns if col in lookup_cols]
 
-    # remove cols not in cols_to_keep
-    df_ref = df_ref[lookup_cols]
+        # remove cols not in cols_to_keep
+        df_ref = df_ref[lookup_cols]
 
-    # rename cols using lookup name:name_python
-    col_name_mapping = dict(zip(df_lookup["name"], df_lookup["name_python"]))
-    df_ref.rename(columns=col_name_mapping, inplace=True)
+        # rename cols using lookup name:name_python
+        col_name_mapping = dict(zip(df_lookup["name"], df_lookup["name_python"]))
+        df_ref.rename(columns=col_name_mapping, inplace=True)
 
     # set int cols
     # if col in int_col set to int
@@ -117,6 +120,10 @@ def clean_reference_rows(df_ref, col_species):
     # 1. remove values with itree_spec = 0
     if "itree_spec" in df_ref.columns:
         df_ref = df_ref[df_ref["itree_spec"] != 0]
+
+    # 3. remove rows with negative totben_cap values
+    if "totben_cap" in df_ref.columns:
+        df_ref = df_ref[df_ref["totben_cap"] >= 0]
 
     # 2. fill rows with missing values
     # if dbh is  null and height is not null
@@ -237,10 +244,24 @@ def encode_species(df, col_species):
 
 def export_reference(df_ref, df_species_summary):
     # export reference data to csv
+    import numpy as np
+
     parameters = load_parameters()
     municipality = parameters["municipality"]
 
     catalog = load_catalog()
+    cols_int = parameters["cols_int"]
+    cols_float = parameters["cols_float"]
+
+    for col in cols_int:
+        if col in df_ref.columns:
+            df_ref[col] = df_ref[col].astype(np.int64)
+
+    for col in cols_float:
+        if col in df_ref.columns:
+            df_ref[col] = pd.to_numeric(df_ref[col], errors="coerce")
+            df_ref[col] = df_ref[col].round(2)
+
     ref_trees = catalog[f"{municipality}_extrapolation"]["reference"]
     df_ref.to_csv(ref_trees["filepath_csv"], index=False, encoding="utf-8")
 
@@ -248,7 +269,7 @@ def export_reference(df_ref, df_species_summary):
         "filepath"
     ]
     df_species_summary.to_csv(summary_path, index=False, encoding="utf-8")
-    return
+    return df_ref
 
 
 def main(col_id, col_species):
@@ -266,11 +287,12 @@ def main(col_id, col_species):
         logger.info("Reference data not found, creating it")
         # load reference and lookup data
         df_ref = load_reference()
-        df_lookup = load_lookup()
+        if municipality == "oslo":
+            df_lookup = load_lookup()
 
         # CLEAN REFERENCE
         # ---------------
-        df_ref = clean_reference_cols(df_ref, df_lookup)
+        df_ref = clean_reference_cols(df_ref, df_lookup=None)
         df_ref = clean_reference_rows(df_ref, col_species)
 
         # ENCODE SPECIES
@@ -292,7 +314,7 @@ def main(col_id, col_species):
 
         # EXPORT REFERENCE
         # ----------------
-        export_reference(df_ref, df_species_summary)
+        df_ref = export_reference(df_ref, df_species_summary)
     else:
         df_ref = pd.read_csv(
             catalog[f"{municipality}_extrapolation"]["reference"]["filepath_csv"]

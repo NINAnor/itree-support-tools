@@ -193,26 +193,110 @@ oslo_extrapolation:
         filepath_csv: ${TREKRONER}/data/oslo/general/CSV/extrapolation/output
         filepath_geojson: ${TREKRONER}/data/oslo/general/CSV/extrapolation/output
         
+baerum_extrapolation:
+    # USES OSLO REF DATA
+    raw_trees: 
+        type: csv, parquet
+        filepath_csv: ${TREKRONER}/data/oslo/general/CSV/oslo_registered_trees.csv
+        filepath_parquet: ${TREKRONER}/data/oslo/general/PARQUET/oslo_registered_trees.parquet
+    raw_crowns:
+        type: csv, parquet
+        filepath_csv: ${TREKRONER}/data/baerum/general/CSV/baerum_tree_crowns.csv
+        filepath_parquet: ${TREKRONER}/data/baerum/general/CSV/extrapolation/baerum_target_tree_crowns.parquet
+        filepath_geojson: ${TREKRONER}/data/baerum/general/GEOJSON/baerum_tree_crowns.geojson
+    # USES OSLO SPECIES SUMMARY
+    species_summary:
+        type: csv, img   
+        filepath: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_reference_species_summary.csv
+        img_path: ${TREKRONER}/data/oslo/general/CSV/extrapolation/img/oslo_species_summary_plot.png
+    reference:
+        type: csv
+        filepath_csv: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_reference_trees.csv
+    target: 
+        type: csv, parquet
+        filepath_csv: ${TREKRONER}/data/baerum/general/CSV/extrapolation/baerum_target_tree_crowns.csv
+        filepath_parquet: ${TREKRONER}/data/baerum/general/CSV/extrapolation/baerum_target_tree_crowns.parquet
+    # USES OSLO MODEL 
+    model:
+        type: csv, img, pickle
+        filepath_json: ${TREKRONER}/data/oslo/general/CSV/extrapolation/model
+        filepath_pickle: ${TREKRONER}/data/oslo/general/CSV/extrapolation/model
+        filepath_img: ${TREKRONER}/data/oslo/general/CSV/extrapolation/img
+    output:
+        filepath_csv: ${TREKRONER}/data/baerum/general/CSV/extrapolation/output
+        filepath_geojson: ${TREKRONER}/data/baerum/general/CSV/extrapolation/output
 
+bodo_extrapolation:
+    raw_trees: 
+        type: csv, parquet
+        filepath_csv: ${TREKRONER}/data/bodo/general/CSV/bodo_registered_trees.csv
+        filepath_parquet: ${TREKRONER}/data/bodo/general/PARQUET/bodo_registered_trees.parquet
+    raw_crowns:
+        type: csv, parquet
+        filepath_csv: ${TREKRONER}/data/bodo/general/CSV/bodo_tree_crowns.csv
+        filepath_parquet: ${TREKRONER}/data/bodo/general/CSV/extrapolation/bodo_target_tree_crowns.parquet
+        filepath_geojson: ${TREKRONER}/data/bodo/general/GEOJSON/bodo_tree_crowns.geojson
+    species_summary:
+        type: csv, img   
+        filepath: ${TREKRONER}/data/bodo/general/CSV/extrapolation/bodo_reference_species_summary.csv
+        img_path: ${TREKRONER}/data/bodo/general/CSV/extrapolation/img/bodo_species_summary_plot.png
+    reference:
+        type: csv
+        filepath_csv: ${TREKRONER}/data/bodo/general/CSV/extrapolation/bodo_reference_trees.csv
+    target: 
+        type: csv, parquet
+        filepath_csv: ${TREKRONER}/data/bodo/general/CSV/extrapolation/bodo_target_tree_crowns.csv
+        filepath_parquet: ${TREKRONER}/data/bodo/general/CSV/extrapolation/bodo_target_tree_crowns.parquet
+    model:
+        type: csv, img, pickle
+        filepath_json: ${TREKRONER}/data/bodo/general/CSV/extrapolation/model
+        filepath_pickle: ${TREKRONER}/data/bodo/general/CSV/extrapolation/model
+        filepath_img: ${TREKRONER}/data/bodo/general/CSV/extrapolation/img
+    output:
+        filepath_csv: ${TREKRONER}/data/bodo/general/CSV/extrapolation/output
+        filepath_geojson: ${TREKRONER}/data/bodo/general/CSV/extrapolation/output
 
-
-
-
-
-
-
+kristiansand_extrapolation:
+    raw_trees: 
+        type: csv, parquet
+        filepath_csv: ${TREKRONER}/data/kristiansand/general/CSV/kristiansand_registered_trees.csv
+        filepath_parquet: ${TREKRONER}/data/kristiansand/general/PARQUET/kristiansand_registered_trees.parquet
+    raw_crowns:
+        type: csv, parquet
+        filepath_csv: ${TREKRONER}/data/kristiansand/general/CSV/kristiansand_tree_crowns.csv
+        filepath_parquet: ${TREKRONER}/data/kristiansand/general/CSV/extrapolation/kristiansand_target_tree_crowns.parquet
+        filepath_geojson: ${TREKRONER}/data/kristiansand/general/GEOJSON/kristiansand_tree_crowns.geojson
+    species_summary:
+        type: csv, img   
+        filepath: ${TREKRONER}/data/kristiansand/general/CSV/extrapolation/kristiansand_reference_species_summary.csv
+        img_path: ${TREKRONER}/data/kristiansand/general/CSV/extrapolation/img/kristiansand_species_summary_plot.png
+    reference:
+        type: csv
+        filepath_csv: ${TREKRONER}/data/kristiansand/general/CSV/extrapolation/kristiansand_reference_trees.csv
+    target: 
+        type: csv, parquet
+        filepath_csv: ${TREKRONER}/data/kristiansand/general/CSV/extrapolation/kristiansand_target_tree_crowns.csv
+        filepath_parquet: ${TREKRONER}/data/kristiansand/general/CSV/extrapolation/kristiansand_target_tree_crowns.parquet
+    model:
+        type: csv, img, pickle
+        filepath_json: ${TREKRONER}/data/kristiansand/general/CSV/extrapolation/model
+        filepath_pickle: ${TREKRONER}/data/kristiansand/general/CSV/extrapolation/model
+        filepath_img: ${TREKRONER}/data/kristiansand/general/CSV/extrapolation/img
+    output:
+        filepath_csv: ${TREKRONER}/data/kristiansand/general/CSV/extrapolation/output
+        filepath_geojson: ${TREKRONER}/data/kristiansand/general/CSV/extrapolation/output
 
 
 reference_oslo:
     type: excel
-    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/extrapolation/reference_oslo.xlsx
+    filepath: ${TREKRONER}/data/<<municipality>>/itree-support-tools/interim/extrapolation/reference_oslo.xlsx
     sheet_names:
         - metadata
         - reference_data
 
 reference_municipality:
     type: excel
-    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/extrapolation/reference_<<municipality>>.xlsx
+    filepath: ${TREKRONER}/data/<<municipality>>/general/CSV/extrapolation/reference_<<municipality>>.xlsx
     sheet_names:
         - metadata
         - reference_data
@@ -220,7 +304,7 @@ reference_municipality:
 
 target_municipality:
     type: excel
-    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/interim/extrapolation/target_<<municipality>>.xlsx
+    filepath: ${TREKRONER}/data/<<municipality>>/itree-support-tools/interim/extrapolation/<<municipality>>_target_tree_crowns.xlsx
     sheet_names:
         - metadata
         - target_data
@@ -228,7 +312,7 @@ target_municipality:
 # OUTPUT DATA (end result from integration, attribute pipelines, i-tree eco modelling, and extrapolation)
 extrapolated_values:
     type: csv
-    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/itree-support-tools/processed/<<municipality>>_extrapolated_values.csv
+    filepath: ${TREKRONER}/data/<<municipality>>/itree-support-tools/processed/<<municipality>>_extrapolated_values.csv
 
 tree_db:
     type: filegdb
