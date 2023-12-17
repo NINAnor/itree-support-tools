@@ -2,9 +2,9 @@ import logging
 import os
 
 import src.utils.decorators as dec
-from src.extrapolation import clean_reference, clean_results, clean_target, regressor
 from src.config.config import load_catalog, load_parameters
 from src.config.logger import setup_logging
+from src.extrapolation import clean_reference, clean_results, clean_target, regressor
 
 
 @dec.timer

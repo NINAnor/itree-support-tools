@@ -386,7 +386,7 @@ def evaluate_model(model, response, X_test, y_test, model_params, file_prefix):
     _plot_model_performance(response, y_test, y_pred, dict, file_prefix)
 
     # if file prefix contains "kristiansand"
-    if not "kristiansand" in file_prefix:
+    if "kristiansand" not in file_prefix:
         _export_model_params(dict, file_prefix)
 
     return dict
