@@ -1,4 +1,4 @@
-municipality: bodo
+municipality: oslo
 
 # coordinate system
 spatial_reference:
@@ -6,3 +6,314 @@ spatial_reference:
   kristiansand: "ETRS 1989 UTM Zone 32N"
   oslo: "ETRS 1989 UTM Zone 32N"
   bodo: "ETRS 1989 UTM Zone 33N"
+
+cols_int:
+  - "id"
+  - "itree_spec"
+  - "schools"
+  - "area_code"
+  - "district_code"
+  - "pollution_zone"
+
+cols_float:
+  - "dbh"
+  - "height_total_tree"
+  - "crown_area"
+  - "co2_storage_kg"
+  - "co2_seq_kg_yr"
+  - "runoff_m3_yr"
+  - "pollution_co"
+  - "pollution_o3"
+  - "pollution_no2"
+  - "pollution_pm25"
+  - "pollution_so2"
+  - "pollution_g"
+  - "co2_storage_nok_2023"
+  - "co2_seq_nok_2023"
+  - "runoff_nok_2023"
+  - "pollution_nok_2023"
+  - "totben_cap_2023"
+  - "totben_cap_2023_ca"
+  #- "totben_cap_ca" # total benefits per crown area (Nkr/m2): totben_cap / crown_area
+
+# # NINA Project memo 397 (Barton, D. & Venter, Z., 2022) 
+# pollution zone, crown area and tree height are the 3 variables that mos explain variation in ecossytem services (Cimburova and Barton, 2020)
+# pollution_g = sum(pollution_NO2 + pollution_PM25 + pollution_SO2)
+# pollution and O3 and CO are not considered air pollutants in Norway (priced to zero) an therefore not included 
+# PM10 is included in PM25
+# The tree (canopy height, diameter at breast height, crown
+# area) and ecosystem condition (air pollution) variables most strongly predicting ecosystem
+# services in the sample of municipally managed trees were retained for the Bayesian
+# network model (Cimburova and Barton 2020).
+oslo:
+  ref_id: "tree_id"
+  target_id: "id"
+  col_species: "taxon_genus"
+  cols_ref:
+    - "tree_id"
+    - "itree_spec"
+    - "schools"
+    - "area_code"
+    - "district_code"
+    - "norwegian_name"
+    - "scientific_name"
+    - "taxon_genus" # genus
+    - "species_origin"
+    - "dbh"
+    - "dbh_origin"
+    - "height_total_tree"
+    - "height_origin"
+    - "crown_area"
+    - "crown_diam"
+    - "crown_origin"
+    - "pollution_zone"
+    - "co2_storage_kg"
+    - "co2_seq_kg_yr"
+    - "runoff_m3_yr"
+    - "pollution_co"
+    - "pollution_o3"
+    - "pollution_no2"
+    - "pollution_pm25"
+    - "pollution_so2"
+    - "pollution_g"
+    - "co2_storage_nok_2023"
+    - "co2_seq_nok_2023"
+    - "runoff_nok_2023"
+    - "pollution_nok_2023"
+    - "totben_cap_2023"
+    - "totben_cap_2023_ca"
+  cols_target:
+    - "id"
+    - "crown_id_2014"
+    - "crown_id_2021"
+    - "tree_id"
+    - "itree_spec"
+    - "teig_undervisning" # schools
+    - "school_id"
+    - "delomradenummer" # area_code
+    - "grunnkretsnummer" # district_code
+    - "norwegian_name"
+    - "common_name"
+    - "taxon_genus" #genus
+    - "species_origin"
+    - "dbh"
+    - "dbh_origin"
+    - "height_total_tree"
+    - "height_origin"
+    - "crown_area"
+    - "crown_diam"
+    - "crown_diam_origin"
+    - "crown_peri"
+    - "crown_vol"
+    - "ratio_CA_ECA"
+    - "ratio_CA_CHA"
+    - "crown_origin"
+    - "pollution_zone"
+    - "geo_relation"
+    - "wg84_lon"
+    - "wg84_lat"
+    - "co2_storage_kg"
+    - "co2_seq_kg_yr"
+    - "runoff_m3_yr"
+    - "pollution_no2"
+    - "pollution_pm25"
+    - "pollution_so2"
+    - "pollution_g"
+    - "co2_storage_nok_2023"
+    - "co2_seq_nok_2023"
+    - "runoff_nok_2023"
+    - "pollution_nok_2023"
+    - "totben_cap_2023"
+    - "totben_cap_2023_ca"
+
+baerum:
+  ref_id: "tree_id"
+  target_id: "crown_id"
+  col_species: "taxon_genus"
+  cols_target:
+    - "crown_id"
+    - "tree_id"
+    - "delomradenummer" # area_code
+    - "grunnkretsnummer" # district_code
+    - "norwegian_name"
+    - "common_name"
+    - "taxon_genus" #genus
+    - "species_origin"
+    - "dbh"
+    - "dbh_origin"
+    - "height_total_tree"
+    - "height_origin"
+    - "crown_area"
+    - "crown_diam"
+    - "crown_origin"
+    - "pollution_zone"
+    - "co2_storage_kg"
+    - "co2_seq_kg_yr"
+    - "runoff_m3"
+    - "pollution_no2"
+    - "pollution_pm25"
+    - "pollution_so2"
+    - "pollution_g"
+    - "totben_cap"
+    - "totben_cap_ca"
+
+
+bodo:
+  ref_id: "tree_id"
+  target_id: "id"
+  col_species: "norwegian_name"
+  cols_ref:
+    - "tree_id"
+    - "itree_spec"
+    - "area_code"
+    - "district_code"
+    - "norwegian_name"
+    - "scientific_name"
+    - "species_origin"
+    - "dbh"
+    - "dbh_origin"
+    - "height_total_tree"
+    - "height_origin"
+    - "crown_area"
+    - "crown_diam"
+    - "crown_origin"
+    - "pollution_zone"
+    - "co2_storage_kg"
+    - "co2_seq_kg_yr"
+    - "runoff_m3"
+    - "pollution_no2"
+    - "pollution_pm25"
+    - "pollution_so2"
+    - "pollution_g"
+    - "totben_cap"
+    - "totben_cap_ca"
+  cols_target:
+    - "id"
+    - "tree_id"
+    - "delomradenummer" # area_code
+    - "grunnkretsnummer" # district_code
+    - "norwegian_name"
+    - "common_name"
+    - "species_origin"
+    - "dbh"
+    - "dbh_origin"
+    - "height_total_tree"
+    - "height_origin"
+    - "crown_area"
+    - "crown_diam"
+    - "crown_origin"
+    - "pollution_zone"
+    - "co2_storage_kg"
+    - "co2_seq_kg_yr"
+    - "runoff_m3"
+    - "pollution_no2"
+    - "pollution_pm25"
+    - "pollution_so2"
+    - "pollution_g"
+    - "totben_cap"
+    - "totben_cap_ca"
+
+kristiansand:
+  ref_id: "tree_id"
+  target_id: "id"
+  col_species: "norwegian_name"
+  cols_ref:
+    - "tree_id"
+    - "itree_spec"
+    - "area_code"
+    - "district_code"
+    - "norwegian_name"
+    - "scientific_name"
+    - "species_origin"
+    - "dbh"
+    - "dbh_origin"
+    - "height_total_tree"
+    - "height_origin"
+    - "crown_area"
+    - "crown_diam"
+    - "crown_origin"
+    - "pollution_zone"
+    - "co2_storage_kg"
+    - "co2_seq_kg_yr"
+    - "runoff_m3"
+    - "pollution_no2"
+    - "pollution_pm25"
+    - "pollution_so2"
+    - "pollution_g"
+    - "totben_cap"
+    - "totben_cap_ca"
+  cols_target:
+    - "id"
+    - "tree_id"
+    - "delomradenummer" # area_code
+    - "grunnkretsnummer" # district_code
+    - "norwegian_name"
+    - "common_name"
+    - "species_origin"
+    - "dbh"
+    - "dbh_origin"
+    - "height_total_tree"
+    - "height_origin"
+    - "crown_area"
+    - "crown_diam"
+    - "crown_origin"
+    - "pollution_zone"
+    - "co2_storage_kg"
+    - "co2_seq_kg_yr"
+    - "runoff_m3"
+    - "pollution_no2"
+    - "pollution_pm25"
+    - "pollution_so2"
+    - "pollution_g"
+    - "totben_cap"
+    - "totben_cap_ca"
+
+rf_individual_es:
+    reference_literature: NINA Project memo 397 (Barton, D. & Venter, Z., 2022)
+    model_form: (individual_ES)x,y,t ~ randomForest(Height + Crown Area + Pollution Zone)x,y,t
+    transform: None
+    model_options:
+      test_size: 0.2
+      random_state: 3
+      response:
+        - runoff_m3 
+        #- pollution_no2 
+        #- pollution_pm25 
+        #- pollution_so2 
+        - pollution_g # sum(NO2, PM25 and SO2)
+      predictors: # species
+        - height_total_tree # tree height
+        - crown_area
+        - pollution_zone # zone 1, zone 3, zone 3
+
+rf_carbon_es:
+    reference_literature: NINA Project memo 397 (Barton, D. & Venter, Z., 2022)
+    model_form: (individual_ES)x,y,t ~ randomForest(DBH + Height + Crown Area + Pollution Zone)x,y,t
+    transform: None
+    model_options:
+      test_size: 0.2
+      random_state: 3
+      response:
+        - co2_storage_kg 
+        - co2_seq_kg_yr 
+      predictors: # species
+        - dbh
+        - height_total_tree # tree height
+        - crown_area
+        - pollution_zone # zone 1, zone 3, zone 3
+
+rf_total_cap:
+  reference_literature: Barton, D. 2023 
+  model_form: (Total Annual Benefits)x,y,t ~ randomForest(Species + DBH + Height + Crown Area + Pollution Zone)x,y,t
+  transform: None
+  model_options:
+    test_size: 0.2
+    random_state: 3
+    response:
+      - totben_cap # total benefits (Nkr/tree)
+    predictors:
+      - taxon_genus # species
+      - dbh # diameter at breast height
+      - height_total_tree # tree height
+      - crown_area
+      - pollution_zone # zone 1, zone 3, zone 3

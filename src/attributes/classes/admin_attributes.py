@@ -98,6 +98,8 @@ class AdminAttributes:
         Adds the attribute 'crown_id' (TEXT) to the crown feature class.
             > Computes crown id from OBJECTID.Gl
             > Only populates the field if it contains any null or empty values
+
+        "b_" + str(!nb_code!) + "_" + str(!OBJECTID)
         """
         self.logger.info("\tATTRIBUTE | crown_id:")
         au.addField_ifNotExists(self.crown_filename, "crown_id", "TEXT")

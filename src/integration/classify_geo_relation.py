@@ -1,5 +1,8 @@
 """ 
-Classify the geometric relation between the stem points (in situ) and the crown polygons (laser)
+Integrates the tree crown polygons derived from different analysis into one unified dataet.  
+Trees from Case 1, 2, and 3 are the training dataset for the i-Tree Eco model
+Trees from Case 4 are the extrapolation dataset.  
+
 Case 1: one polygon contains one point (1:1), simple join.  
 Case 2: one polygon contains more than one point (1:n), split crown with voronoi tesselation.
 Case 3: a point is not overlapped by any polygon (0:1), model tree crown using oslo formula.

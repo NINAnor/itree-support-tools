@@ -2,7 +2,7 @@
 # --------------------------------------------------------------------------- #
 # Name: prepare_data.py
 # Date: 2023-10-19
-# Description: Prepare data for itree-eco analysis and extrapolation
+# Description: Prepare data for the itree-eco analysis
 # Author: Willeke A'Campo
 # Dependencies: ArcGIS Pro 3.0+, Spatial Analyst
 # --------------------------------------------------------------------------- #

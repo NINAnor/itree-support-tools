@@ -1,16 +1,12 @@
 """
-AUTHOR(S):    Zofie Cimburova
-PURPOSE:      Computes light exposure of tree crowns (polygons)
+Code adapted from https://github.com/zofie-cimburova/i-Tree-Eco/blob/main/crown_light_exposure.py 
 COPYRIGHT:    (C) 2022 by Zofie Cimburova
-REFERENCES:   Cimburova, Z., Barton, D.N., 2020. The potential
-of geospatial analysis and Bayesian networks to enable i-Tree Eco
-assessment of existing tree inventories. Urban Forestry and Urban
-Greening. 55, 126801. https://doi.org/10.1016/j.ufug.2020.126801
 
 Please backup your input data before the analysis.
 In some rare cases, ArcGIS may corrupt the input data if
 the analysis ends with error.
 """
+
 import os
 import random
 import string
@@ -445,3 +441,30 @@ with arcpy.da.UpdateCursor(v_trees_poly, [a_ID, a_CLE]) as cursor:
         cursor.updateRow(row)
 
 # ==============================================================
+
+
+# ==============================================================
+# Field calculator code blocks
+codeblock = """def calculate_cle_class(cle_percent):
+if cle_percent <= -999:
+    return 0
+if cle_percent <= 0.125:
+    return 5
+elif cle_percent <= 0.375:
+    return 4
+elif cle_percent <= 0.625:
+    return 3
+elif cle_percent <= 0.875:
+    return 2
+else:
+    return 1
+"""
+# calculate_cle_class(!cle_percent!)
+
+codeblock = """
+def calculate_cle_class(cle_percent):
+if cle_percent <= -999:
+    return 0
+else:
+    return cle_percent
+"""

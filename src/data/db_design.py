@@ -1,12 +1,12 @@
-import arcpy
 import logging
 import os
-import pandas as pd
 
-from src.utils import arcpy_utils as au
+import arcpy
+
 from src.config.config import load_catalog, load_parameters
 from src.config.logger import setup_logging
 from src.data import load
+from src.utils import arcpy_utils as au
 
 
 def remove_fields(fc, fields_to_keep=None):

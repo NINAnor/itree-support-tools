@@ -1,4 +1,8 @@
-import logging
+"""
+Code adapted from: https://github.com/zofie-cimburova/i-Tree-Eco/blob/main/distance_direction.py
+COPYRIGHT:  (C) 2022 by Zofie Cimburova
+"""
+
 import os
 
 import arcpy
@@ -6,7 +10,6 @@ from arcpy import env
 
 # local sub-package utils
 from src import arcpy_utils as au
-from src.logger import setup_logging
 
 # TODO load data_paths from catalog.yaml
 # from src import INTERIM_PATH
@@ -129,36 +132,13 @@ def distance_to_building(filegdb, v_stem, v_crown_path, v_residential_buildings)
 
 
 if __name__ == "__main__":
-    # setup logger
-    setup_logging()
-    logger = logging.getLogger(__name__)
+    pass
 
-    filegdb_path = os.path.join(
-        INTERIM_PATH, "itree_attributes", "itree_building_distance.gdb"
-    )
-    v_crown_path = os.path.join(filegdb_path, "itree_crowns")
-    v_stem_path = os.path.join(filegdb_path, "itree_stems")
-    v_crown = "itree_crowns"
-    v_stem = "itree_stems"
-
-    # P-DRIVE PATHS KRISTIANSAND
-    # v_residential_buildings = r"P:\152022_itree_eco_ifront_synliggjore_trars_rolle_i_okosyst\data\kristiansand\general\kristiansand_arealdata.gdb\fkb_boligbygg_omrade"  # # P-DRIVE PATHS BODO
-    v_residential_buildings = r"P:\152022_itree_eco_ifront_synliggjore_trars_rolle_i_okosyst\data\bodo\general\bodo_arealdata.gdb\fkb_boligbygg_omrade"
-
-    # TODO delete stems with no crown_id MANUALLY!
-    input(
-        "Delete all stems with no crown geometry (crown_id). Press Enter to continue..."
-    )
-
-    au.join_and_copy(
-        t_dest=v_stem_path,
-        join_a_dest="tree_id",
-        t_src=v_crown_path,
-        join_a_src="tree_id",
-        a_dest=["height_total_tree", "crown_diam", "crown_radius", "height_origin"],
-        a_src=["height_total_tree", "crown_diam", "crown_radius", "height_origin"],
-    )
-
-    # distance_to_building(
-    #     filegdb_path, v_stem_path, v_crown_path, v_residential_buildings
-    # )
+    # field calculator code block
+    codeblock = """
+        def is_null_building(building):
+        if building is None:
+            return -1
+        else:
+            return building
+        """
