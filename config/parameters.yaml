@@ -1,4 +1,4 @@
-municipality: kristiansand
+municipality: oslo
 
 # coordinate system
 spatial_reference:
@@ -21,12 +21,19 @@ cols_float:
   - "crown_area"
   - "co2_storage_kg"
   - "co2_seq_kg_yr"
-  - "runoff_m3"
+  - "runoff_m3_yr"
+  - "pollution_co"
+  - "pollution_o3"
   - "pollution_no2"
   - "pollution_pm25"
   - "pollution_so2"
   - "pollution_g"
-  - "totben_cap"
+  - "co2_storage_nok_2023"
+  - "co2_seq_nok_2023"
+  - "runoff_nok_2023"
+  - "pollution_nok_2023"
+  - "totben_cap_2023"
+  - "totben_cap_2023_ca"
   #- "totben_cap_ca" # total benefits per crown area (Nkr/m2): totben_cap / crown_area
 
 # # NINA Project memo 397 (Barton, D. & Venter, Z., 2022) 
@@ -62,18 +69,27 @@ oslo:
     - "pollution_zone"
     - "co2_storage_kg"
     - "co2_seq_kg_yr"
-    - "runoff_m3"
+    - "runoff_m3_yr"
+    - "pollution_co"
+    - "pollution_o3"
     - "pollution_no2"
     - "pollution_pm25"
     - "pollution_so2"
     - "pollution_g"
-    - "totben_cap"
-    - "totben_cap_ca"
+    - "co2_storage_nok_2023"
+    - "co2_seq_nok_2023"
+    - "runoff_nok_2023"
+    - "pollution_nok_2023"
+    - "totben_cap_2023"
+    - "totben_cap_2023_ca"
   cols_target:
     - "id"
+    - "crown_id_2014"
+    - "crown_id_2021"
     - "tree_id"
     - "itree_spec"
     - "teig_undervisning" # schools
+    - "school_id"
     - "delomradenummer" # area_code
     - "grunnkretsnummer" # district_code
     - "norwegian_name"
@@ -86,17 +102,29 @@ oslo:
     - "height_origin"
     - "crown_area"
     - "crown_diam"
+    - "crown_diam_origin"
+    - "crown_peri"
+    - "crown_vol"
+    - "ratio_CA_ECA"
+    - "ratio_CA_CHA"
     - "crown_origin"
     - "pollution_zone"
+    - "geo_relation"
+    - "wg84_lon"
+    - "wg84_lat"
     - "co2_storage_kg"
     - "co2_seq_kg_yr"
-    - "runoff_m3"
+    - "runoff_m3_yr"
     - "pollution_no2"
     - "pollution_pm25"
     - "pollution_so2"
     - "pollution_g"
-    - "totben_cap"
-    - "totben_cap_ca"
+    - "co2_storage_nok_2023"
+    - "co2_seq_nok_2023"
+    - "runoff_nok_2023"
+    - "pollution_nok_2023"
+    - "totben_cap_2023"
+    - "totben_cap_2023_ca"
 
 baerum:
   ref_id: "tree_id"

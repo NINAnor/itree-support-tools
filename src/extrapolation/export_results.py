@@ -122,33 +122,39 @@ def merge_geojson(col_id):
     return
 
 
-def create_summary(col_species):
+def create_summary(input_file, output_path, col_species):
     # read results csv
     parameters = load_parameters()
     municipality = parameters["municipality"]
 
-    catalog = load_catalog()
-    csv_folder = catalog[f"{municipality}_extrapolation"]["output"]["filepath_csv"]
-
-    filename = f"{municipality}_extrapolation_results.csv"
-    df = pd.read_csv(os.path.join(csv_folder, filename))
+    df = pd.read_csv(input_file, low_memory=False)
 
     categorical_vars = [col_species, "pollution_zone"]
     continuous_vars = [
         "dbh",
         "height_total_tree",
         "crown_area",
-        "totben_cap",
-        "totben_cap_ca",
         "co2_storage_kg",
         "co2_seq_kg_yr",
-        "runoff_m3",
-        # "pollution_no2",
-        # "pollution_pm25",
-        # "pollution_so2",
-        "pollution_g",
+        "runoff_m3_yr",
+        "pollution_no2",
+        "pollution_pm25",
+        "pollution_so2",
+        "pollution_g_yr",
+        "co2_storage_nok_2023",
+        "co2_seq_nok_2023",
+        "runoff_nok_2023",
+        "pollution_nok_2023",
+        "totben_cap_2023",
+        "totben_cap_2023_ca",
     ]
 
+    # calculate col totben_cap_2023_ca
+    df["totben_cap_2023_ca"] = df["totben_cap_2023"] / df["crown_area"]
+
+    # round all cols to 2 except wgs_lon and wgs_lat
+
+    df = df.round(2)
     # SUMMARY STAT BUILT-UP ZONE
     # ---------------------------
     # count mean std min 25% 50% 75% max
@@ -156,11 +162,11 @@ def create_summary(col_species):
     df_summary = df[continuous_vars].describe()
     df_summary.loc["median"] = df[continuous_vars].median()
     df_summary.loc["sum"] = df[continuous_vars].sum()
-    df_summary = df_summary.round(2)
+    df_summary = df_summary.round(1)
 
     # export to csv
     df_summary.to_csv(
-        os.path.join(csv_folder, f"{municipality}_summary_ES_built_up_zone.csv"),
+        os.path.join(output_path, f"{municipality}_summary_ES.csv"),
         index=True,
     )
     print(df_summary)
@@ -171,14 +177,14 @@ def create_summary(col_species):
     df_sum = df_sum[continuous_vars]
     df_sum = df_sum.reset_index()
     df_sum = df_sum.rename(columns={"grunnkretsnummer": "district_id"})
-
+    df_sum = df_sum.round(1)
     # last row is sum of all districts
     df_sum.loc["sum"] = df_sum.sum()
     print(df_sum.head())
 
     # export to csv
     df_sum.to_csv(
-        os.path.join(csv_folder, f"{municipality}_sum_ES_per_district.csv"),
+        os.path.join(output_path, f"{municipality}_sum_ES_per_district.csv"),
         index=False,
     )
 
@@ -190,26 +196,16 @@ def create_summary(col_species):
         df_schools_summary = df_schools[continuous_vars].describe()
         df_schools_summary.loc["median"] = df_schools[continuous_vars].median()
         df_schools_summary.loc["sum"] = df_schools[continuous_vars].sum()
-        df_schools_summary = df_schools_summary.round(2)
+        df_schools_summary = df_schools_summary.round(1)
 
+        # transform
+        df_schools_summary = df_schools_summary.T
         print(df_schools_summary)
 
         # export to csv
         df_schools_summary.to_csv(
-            os.path.join(csv_folder, f"{municipality}_summar_ES_schools.csv"),
+            os.path.join(output_path, f"{municipality}_summar_ES_schools.csv"),
             index=True,
         )
-
-        # read school IDs
-        school_ids = pd.read_csv(
-            os.path.join(csv_folder, "oslo_school_ids.csv"), header=None
-        )
-        # SUM OF ES PER SCHOOL
-        # --------------------
-
-        df_schools_sum = df_schools.groupby(["id"]).sum()
-        df_schools_sum = df_schools_sum[continuous_vars]
-        df_schools_sum = df_schools_sum.reset_index()
-        df_schools_sum = df_schools_sum.rename(columns={"id": "school_id"})
 
     return

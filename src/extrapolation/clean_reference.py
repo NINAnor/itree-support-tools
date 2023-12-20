@@ -47,8 +47,10 @@ def load_lookup() -> pd.DataFrame:
     lookup = catalog[f"{municipality}_extrapolation"]["lookup"]
 
     # read lookup from excel, sheetname
-    df_lookup = pd.read_excel(lookup["filepath"], sheet_name=lookup["sheet_name"])
+    # read with encoding to utf-8
 
+    # df_lookup = pd.read_excel(lookup["filepath"], sheet_name=lookup["sheet_name"])
+    df_lookup = pd.read_csv(lookup["filepath_csv"])
     return df_lookup
 
 
@@ -72,19 +74,20 @@ def clean_reference_cols(df_ref, df_lookup):
     # 1. CLEAN COLUMNS
     # ----------------
     if municipality == "oslo":
-        if "name_python" in df_lookup.columns:
-            df_lookup = df_lookup.dropna(subset=["name_python"])
-            df_lookup = df_lookup[df_lookup["name_python"] != ""]
+        if df_lookup is not None:
+            if "name_python" in df_lookup.columns:
+                df_lookup = df_lookup.dropna(subset=["name_python"])
+                df_lookup = df_lookup[df_lookup["name_python"] != ""]
 
-        lookup_cols = df_lookup["name"].tolist()
-        lookup_cols = [col for col in df_ref.columns if col in lookup_cols]
+            lookup_cols = df_lookup["name"].tolist()
+            lookup_cols = [col for col in df_ref.columns if col in lookup_cols]
 
-        # remove cols not in cols_to_keep
-        df_ref = df_ref[lookup_cols]
+            # remove cols not in cols_to_keep
+            df_ref = df_ref[lookup_cols]
 
-        # rename cols using lookup name:name_python
-        col_name_mapping = dict(zip(df_lookup["name"], df_lookup["name_python"]))
-        df_ref.rename(columns=col_name_mapping, inplace=True)
+            # rename cols using lookup name:name_python
+            col_name_mapping = dict(zip(df_lookup["name"], df_lookup["name_python"]))
+            df_ref.rename(columns=col_name_mapping, inplace=True)
 
     # set int cols
     # if col in int_col set to int
@@ -117,13 +120,29 @@ def clean_reference_cols(df_ref, df_lookup):
 
 
 def clean_reference_rows(df_ref, col_species):
+    """
+    Clean referance data.
+    - remove rows with missing values for totben_cap
+    - fill rows with missing values for dbh and height
+        - dbh = 4.04 * height^0.82
+        - dbh = (crown_diam^2.63)/(3.48^2.63)
+        - height = (dbh*1.22)/(4.04^1.22)
+
+    Parameters
+    ----------
+    df_ref : _type_
+        _description_
+    col_species : _type_
+        _description_
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
     # 1. remove values with itree_spec = 0
     if "itree_spec" in df_ref.columns:
         df_ref = df_ref[df_ref["itree_spec"] != 0]
-
-    # 3. remove rows with negative totben_cap values
-    if "totben_cap" in df_ref.columns:
-        df_ref = df_ref[df_ref["totben_cap"] >= 0]
 
     # 2. fill rows with missing values
     # if dbh is  null and height is not null
@@ -193,8 +212,8 @@ def calc_summary(data, x, classify_other=False):
     summary["Probability"] = summary["n"] / summary["n"].sum()
     summary["Perc"] = round(summary["Probability"] * 100, 2)
     summary = summary.sort_values("Perc", ascending=False)
-
-    if abs(summary["Probability"].sum() - 1) > 1e-8:
+    probability_sum = abs(summary["Probability"].sum() - 1)
+    if not np.isclose(probability_sum, 1.0, atol=1e-8):
         raise ValueError("Error: Probability SUM != 1")
 
     data_summary = summary.drop(columns="Probability")

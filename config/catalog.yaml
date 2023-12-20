@@ -162,16 +162,17 @@ attr_cle:
 oslo_extrapolation:
     raw_trees: 
         type: csv, parquet
-        filepath_csv: ${TREKRONER}/data/oslo/general/CSV/oslo_registered_trees.csv
-        filepath_parquet: ${TREKRONER}/data/oslo/general/PARQUET/oslo_registered_trees.parquet
+        filepath_csv: ${TREKRONER}/data/oslo/general/CSV/oslo_itree_traer_2018.csv
+        filepath_parquet: ${TREKRONER}/data/oslo/general/PARQUET/oslo_itree_traer_2018.parquet
     raw_crowns:
         type: csv, parquet
-        filepath_csv: ${TREKRONER}/data/oslo/general/CSV/oslo_tree_crowns.csv
-        filepath_parquet: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_target_tree_crowns.parquet
-        filepath_geojson: ${TREKRONER}/data/oslo/general/GEOJSON/oslo_tree_crowns.geojson
+        filepath_csv: ${TREKRONER}/data/oslo/general/CSV/oslo_itree_trekroner_2021.csv
+        filepath_parquet: ${TREKRONER}/data/oslo/general/CSV/extrapolation/oslo_trekroner_2021.parquet
+        filepath_geojson: ${TREKRONER}/data/oslo/general/GEOJSON/oslo_trekroner_2021.geojson
     lookup:
-        type: excel
-        filepath: ${TREKRONER}/data/lookup_tables/lookup_attribute_fields.xlsx
+        type: csv
+        filepath: ${TREKRONER}/data/lookup_tables/lookup_oslo_fields.csv
+        filepath_csv: ${TREKRONER}/data/lookup_tables/lookup_oslo_fields.csv
         sheet_name: oslo_fields
     species_summary:
         type: csv, img   
@@ -285,34 +286,6 @@ kristiansand_extrapolation:
     output:
         filepath_csv: ${TREKRONER}/data/kristiansand/general/CSV/extrapolation/output
         filepath_geojson: ${TREKRONER}/data/kristiansand/general/CSV/extrapolation/output
-
-
-reference_oslo:
-    type: excel
-    filepath: ${TREKRONER}/data/<<municipality>>/itree-support-tools/interim/extrapolation/reference_oslo.xlsx
-    sheet_names:
-        - metadata
-        - reference_data
-
-reference_municipality:
-    type: excel
-    filepath: ${TREKRONER}/data/<<municipality>>/general/CSV/extrapolation/reference_<<municipality>>.xlsx
-    sheet_names:
-        - metadata
-        - reference_data
-        - unique_species
-
-target_municipality:
-    type: excel
-    filepath: ${TREKRONER}/data/<<municipality>>/itree-support-tools/interim/extrapolation/<<municipality>>_target_tree_crowns.xlsx
-    sheet_names:
-        - metadata
-        - target_data
-
-# OUTPUT DATA (end result from integration, attribute pipelines, i-tree eco modelling, and extrapolation)
-extrapolated_values:
-    type: csv
-    filepath: ${TREKRONER}/data/<<municipality>>/itree-support-tools/processed/<<municipality>>_extrapolated_values.csv
 
 tree_db:
     type: filegdb
