@@ -7,6 +7,27 @@ spatial_reference:
   oslo: "ETRS 1989 UTM Zone 32N"
   bodo: "ETRS 1989 UTM Zone 33N"
 
+EPSG:
+  baerum: 25832
+  kristiansand: 25832
+  oslo: 25832
+  bodo: 25833
+
+# delområdenummer
+district_number:
+  baerum: 
+    min: 302401
+    max: 302423
+  kristiansand:
+    min: 420407
+    max: 420411
+  oslo:
+    min: 30101
+    max: 30161
+  bodo:
+    min: 180401
+    max: 180411
+
 cols_int:
   - "id"
   - "itree_spec"
@@ -36,15 +57,6 @@ cols_float:
   - "totben_cap_2023_ca"
   #- "totben_cap_ca" # total benefits per crown area (Nkr/m2): totben_cap / crown_area
 
-# # NINA Project memo 397 (Barton, D. & Venter, Z., 2022) 
-# pollution zone, crown area and tree height are the 3 variables that mos explain variation in ecossytem services (Cimburova and Barton, 2020)
-# pollution_g = sum(pollution_NO2 + pollution_PM25 + pollution_SO2)
-# pollution and O3 and CO are not considered air pollutants in Norway (priced to zero) an therefore not included 
-# PM10 is included in PM25
-# The tree (canopy height, diameter at breast height, crown
-# area) and ecosystem condition (air pollution) variables most strongly predicting ecosystem
-# services in the sample of municipally managed trees were retained for the Bayesian
-# network model (Cimburova and Barton 2020).
 oslo:
   ref_id: "tree_id"
   target_id: "id"

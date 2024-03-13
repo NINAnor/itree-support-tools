@@ -297,6 +297,18 @@ tree_db:
         - trekroner
         - trekroner_xy 
 
+parquet_dir:
+    type: parquet and duckdb
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/general/PARQUET
+
+geojson_dir:
+    type: geojson 
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/general/GEOJSON
+
+rule_3_30_300_dir:
+    type: csv
+    filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/general/CSV/rule_3_30_300
+    old_filepath: ${DATA_PATH_LOCAL}/data/<<municipality>>/urban-tree-visibility/rule_3_30_300_old
 # ----------------------------
 # METADATA
 # ----------------------------
